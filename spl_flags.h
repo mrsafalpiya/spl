@@ -281,6 +281,71 @@ spl_flags_parse(int argc, char **argv)
 
 #endif /* SPL_FLAGS_IMPLEMENTATION */
 
+#ifdef SPL_FLAGS_DEBUG
+
+#include <stdio.h>
+
+/*
+ * Print all the current flags defined, it's details and it's current value
+ *
+ * Also prints all the non-flag arguments and non-defined flag arguments
+*/
+void
+spl_flags_debug_print(FILE *restrict stream)
+{
+	fprintf(stream, "= DEFINED FLAGS =\n");
+	for (int i = 0; i < flags_c; i++) {
+		fprintf(stream, "#%d of %d:\n", i+1, flags_c);
+		fprintf(stream, "Type: ");
+
+		switch (flags[i].type) {
+		case TYPE_TOGGLE:
+			fprintf(stream, "Toggle");
+			break;
+		case TYPE_INT:
+			fprintf(stream, "Number");
+			break;
+		case TYPE_STR:
+			fprintf(stream, "String");
+		}
+
+		fprintf(stream, "\tShort hand: %c\tLong hand: %s\n",
+			flags[i].short_hand, flags[i].long_hand);
+
+		switch (flags[i].type) {
+		case TYPE_TOGGLE:
+			fprintf(stream, "'%d' (Default: '%d')",
+				*((int *)flags[i].value),
+				flags[i].value_default.value_int);
+			break;
+		case TYPE_INT:
+			fprintf(stream, "'%d' (Default: '%d')",
+				*((int *)flags[i].value),
+				flags[i].value_default.value_int);
+			break;
+		case TYPE_STR:
+			fprintf(stream, "'%s' (Default: '%s')",
+				*((char **)flags[i].value),
+				flags[i].value_default.value_str);
+		}
+
+		fprintf(stream, "\n\n");
+	}
+
+	fprintf(stream, "= NON-FLAG ARGUMENTS =\n");
+	for (int i = 0; i < non_flag_arguments_c; i++) {
+		fprintf(stream, "'%s'\n", non_flag_arguments[i]);
+	}
+	fprintf(stream, "\n\n");
+
+	fprintf(stream, "= NON-DEFINED FLAGS PASSED =\n");
+	for (int i = 0; i < non_defined_flags_c; i++) {
+		fprintf(stream, "'%s'\n", non_defined_flags[i]);
+	}
+}
+
+#endif
+
 /*
  * ===============================================
  * | License - Public Domain (www.unlicense.org) |
