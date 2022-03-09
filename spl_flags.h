@@ -1,5 +1,5 @@
 /*
- * spl_utils.h - https://github.com/mrsafalpiya/spl
+ * spl_flags.h - https://github.com/mrsafalpiya/spl
  * no warranty implied; use at your own risk
 
  * See end of file for license information.
@@ -308,6 +308,8 @@ spl_flags_debug_print(FILE *restrict stream)
 	fprintf(stream, "= DEFINED FLAGS =\n");
 	for (int i = 0; i < flags_c; i++) {
 		fprintf(stream, "#%d of %d:\n", i+1, flags_c);
+
+		fprintf(stream, "Info: %s\n", flags[i].info);
 		fprintf(stream, "Type: ");
 
 		switch (flags[i].type) {
