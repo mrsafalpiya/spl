@@ -203,6 +203,7 @@ spl_flags_parse(int argc, char **argv)
 			continue;
 		}
 
+cur_argv_next_char:
 		++cur_argv;
 		for (int j = 0; j < flags_c; j++) {
 			is_found = 0;
@@ -274,7 +275,18 @@ spl_flags_parse(int argc, char **argv)
 		if (!is_found) {
 			++non_defined_flags_c;
 
-			non_defined_flags[non_defined_flags_c - 1] = cur_argv;
+			/* check if the argument is a short or a long type */
+			if (argv[i][1] == '-') {
+				non_defined_flags[non_defined_flags_c - 1] =
+					argv[i];
+			} else {
+				non_defined_flags[non_defined_flags_c - 1] =
+					strdup(cur_argv);
+				non_defined_flags[non_defined_flags_c - 1][1] =
+					'\0';
+				if (*(cur_argv + 1) != '\0')
+					goto cur_argv_next_char;
+			}
 		}
 	}
 }
@@ -336,7 +348,7 @@ spl_flags_debug_print(FILE *restrict stream)
 	for (int i = 0; i < non_flag_arguments_c; i++) {
 		fprintf(stream, "'%s'\n", non_flag_arguments[i]);
 	}
-	fprintf(stream, "\n\n");
+	fprintf(stream, "\n");
 
 	fprintf(stream, "= NON-DEFINED FLAGS PASSED =\n");
 	for (int i = 0; i < non_defined_flags_c; i++) {
@@ -344,7 +356,7 @@ spl_flags_debug_print(FILE *restrict stream)
 	}
 }
 
-#endif
+#endif /* SPL_FLAGS_DEBUG */
 
 /*
  * ===============================================
