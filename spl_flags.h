@@ -50,7 +50,10 @@
 
 /* = global variables = */
 static char *non_flag_arguments[512];
-static int non_flag_arguments_c;
+static int non_flag_arguments_c = 0;
+
+static char *non_defined_flags[512];
+static int non_defined_flags_c = 0;
 
 /* = functions = */
 void
@@ -188,6 +191,7 @@ spl_flags_parse(int argc, char **argv)
 {
 	char *cur_argv;
 	flag *cur_flag;
+	int is_found;
 
 	for (int i = 1; i < argc; i++) {
 		cur_argv = argv[i];
@@ -201,22 +205,29 @@ spl_flags_parse(int argc, char **argv)
 
 		++cur_argv;
 		for (int j = 0; j < flags_c; j++) {
-			int is_found = 0;
+			is_found = 0;
 
 			cur_flag = flags + j;
-			switch (is_valid_defined_flag(cur_argv,
-				cur_flag->short_hand, cur_flag->long_hand)) {
+			int flag_type = is_valid_defined_flag(cur_argv,
+				cur_flag->short_hand, cur_flag->long_hand);
+
+			switch (flag_type) {
 			case ARG_SHORT_NON_EQUAL:
 			case ARG_LONG_NON_EQUAL:
 				switch (cur_flag->type) {
 				case TYPE_TOGGLE:
 					*((int *)cur_flag->value) =
 						!*((int *)cur_flag->value);
-					/* check if secondary flags are
-					 * available in the current argv */
-					if (*(cur_argv + 1) != '\0') {
-						++cur_argv;
-						continue;
+					switch (flag_type) {
+					case ARG_SHORT_NON_EQUAL:
+						/* check if secondary flags are
+						 * available in the current argv */
+						if (*(cur_argv + 1) != '\0') {
+							++cur_argv;
+							continue;
+						}
+					default:
+						break;
 					}
 					break;
 				case TYPE_INT:
@@ -257,6 +268,13 @@ spl_flags_parse(int argc, char **argv)
 
 			if (is_found)
 				break;
+		}
+
+		/* handle flag-type but non-defined arguments */
+		if (!is_found) {
+			++non_defined_flags_c;
+
+			non_defined_flags[non_defined_flags_c - 1] = cur_argv;
 		}
 	}
 }
