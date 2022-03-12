@@ -137,9 +137,13 @@ spl_flags_parse(int argc, char **argv);
  * spl_flags_parse parses the argv for all the defined flags *previously*.
  * Meaning this function should be called at last AFTER defining all the flags
  * from the functions defined above
- *
- * NOTE: The argv MUST point to the starting of the passed argument list which
- * for the main function's argv should be argv + 1
+ */
+
+void
+spl_flags_print_flags(FILE *restrict stream);
+/*
+ * spl_flags_print_flags prints to the stream the type, defaults and info about
+ * all the flags definedw.
  */
 
 #endif /* SPL_FLAGS_H */
@@ -156,6 +160,7 @@ spl_flags_parse(int argc, char **argv);
 #ifdef SPL_FLAGS_IMPLEMENTATION
 
 #include <stdlib.h>
+#include <string.h>
 
 /* constants */
 #ifndef SPL_FLAGS_MAX_C
@@ -272,7 +277,7 @@ spl_flags_parse(int argc, char **argv)
 	flag *cur_flag;
 	int is_found;
 
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		cur_argv = argv[i];
 		/* check if the current argument isn't a flag */
 		if (cur_argv[0] != '-') {
@@ -367,6 +372,30 @@ cur_argv_next_char:
 					goto cur_argv_next_char;
 			}
 		}
+	}
+}
+
+void
+spl_flags_print_flags(FILE *restrict stream)
+{
+	for (int i = 0; i < flags_c; i++) {
+		fprintf(stream, "-%c/--%s", flags[i].short_hand, flags[i].long_hand);
+
+		switch (flags[i].type) {
+		case TYPE_TOGGLE:
+			fprintf(stream, " (%s)",
+					flags[i].value_default.value_int ? "on" : "off");
+			break;
+		case TYPE_INT:
+			fprintf(stream, "=%d",
+					flags[i].value_default.value_int);
+			break;
+		case TYPE_STR:
+			fprintf(stream, "=%s",
+					flags[i].value_default.value_str);
+		}
+
+		fprintf(stream, ": %s\n", flags[i].info);
 	}
 }
 
