@@ -129,6 +129,14 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
  *
  * info is a piece of info that gets printed as the place holder in the help
  * section of the program
+ *
+ * NOTE: The value passed SHOULD have a initial value be it empty or a specific
+ * value.
+ *
+ * Example:
+ *
+ * char *foo = "";
+ * spl_flags_str(foo, 'f', "foo", "foobar");
  */
 
 void
