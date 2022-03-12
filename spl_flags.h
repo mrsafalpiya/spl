@@ -3,29 +3,33 @@
  * no warranty implied; use at your own risk
 
  * See end of file for license information.
-*/
+ */
 
 /*
- * ================
- * | Introduction |
- * ================
+ *  ___       _                 _            _   _
+ * |_ _|_ __ | |_ _ __ ___   __| |_   _  ___| |_(_) ___  _ __
+ *  | || '_ \| __| '__/ _ \ / _` | | | |/ __| __| |/ _ \| '_ \
+ *  | || | | | |_| | | (_) | (_| | |_| | (__| |_| | (_) | | | |
+ * |___|_| |_|\__|_|  \___/ \__,_|\__,_|\___|\__|_|\___/|_| |_|
  *
  * SPL_FLAGS.H - GNU-style argument parsing with golang like functions
  *
  * Author: Safal Piya
-*/
+ */
 
 /*
  * Take a look at the "Tips for scanning the library" section of the `README.md`
  * file for some tips and tricks to scan this library header file quickly and
  * easily
-*/
+ */
 
 /*
- * =========
- * | Usage |
- * =========
- *
+ *  _   _
+ * | | | |___  __ _  __ _  ___
+ * | | | / __|/ _` |/ _` |/ _ \
+ * | |_| \__ \ (_| | (_| |  __/
+ *  \___/|___/\__,_|\__, |\___|
+ *                  |___/
  * Do this:
  *
  *         #define SPL_FLAGS_IMPLEMENTATION
@@ -35,48 +39,123 @@
  *
  * Define the SPL_FLAGS_MAX_C to the number of flags you are going to have
  * The default is 128
-*/
+ */
 
 /*
- * ====================
- * | Header-file mode |
- * ====================
-*/
+ *  _   _                _                 __ _ _
+ * | | | | ___  __ _  __| | ___ _ __      / _(_) | ___
+ * | |_| |/ _ \/ _` |/ _` |/ _ \ '__|____| |_| | |/ _ \
+ * |  _  |  __/ (_| | (_| |  __/ | |_____|  _| | |  __/
+ * |_| |_|\___|\__,_|\__,_|\___|_|       |_| |_|_|\___|
+ *
+ */
 
 #ifndef SPL_FLAGS_H
 #define SPL_FLAGS_H
 
-#include <stdlib.h>
+/*
+ *******************************************************************************
+ ================================ Global Variables =============================
+ *******************************************************************************
+ */
 
-/* = global variables = */
 static char *non_flag_arguments[512];
 static int non_flag_arguments_c = 0;
+/*
+ * non_flag_arguments is an array of pointers in the array of argv which were
+ * non-flags
+ *
+ * non_flag_arguments_c is the counter of pointers defined in non_flag_arguments
+ */
 
 static char *non_defined_flags[512];
 static int non_defined_flags_c = 0;
+/*
+ * non_defined_flags is an array of pointers in the array of argv which were
+ * of type flag but not defined through the flag defining functions
+ *
+ * non_defined_flags_c is the counter of pointers defined in non_flag_arguments
+ */
 
-/* = functions = */
+/*
+ *******************************************************************************
+ =================================== Functions =================================
+ *******************************************************************************
+ */
+
 void
 spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char *info);
+/*
+ * spl_flags_toggle defines a flag of type toggle so that the value of the flag
+ * gets set to the underlying variable pointed by value
+ *
+ * short_hand is a character defining the short way of inferring the flag in the
+ * program argument
+ *
+ * long_hand is a string defining the long way of inferring the flag in the
+ * program argument
+ *
+ * info is a piece of info that gets printed as the place holder in the help
+ * section of the program
+ */
 
 void
 spl_flags_int(int *value, char short_hand, const char *long_hand, const char *info);
+/*
+ * spl_flags_int defines a flag of type int so that the value of the flag gets
+ * set to the underlying variable pointed by value
+ *
+ * short_hand is a character defining the short way of inferring the flag in the
+ * program argument
+ *
+ * long_hand is a string defining the long way of inferring the flag in the
+ * program argument
+ *
+ * info is a piece of info that gets printed as the place holder in the help
+ * section of the program
+ */
 
 void
 spl_flags_str(char **value, char short_hand, const char *long_hand, const char *info);
+/*
+ * spl_flags_str defines a flag of type string so that the value of the flag
+ * gets set to the underlying variable pointed by value
+ *
+ * short_hand is a character defining the short way of inferring the flag in the
+ * program argument
+ *
+ * long_hand is a string defining the long way of inferring the flag in the
+ * program argument
+ *
+ * info is a piece of info that gets printed as the place holder in the help
+ * section of the program
+ */
 
 void
 spl_flags_parse(int argc, char **argv);
+/*
+ * spl_flags_parse parses the argv for all the defined flags *previously*.
+ * Meaning this function should be called at last AFTER defining all the flags
+ * from the functions defined above
+ *
+ * NOTE: The argv MUST point to the starting of the passed argument list which
+ * for the main function's argv should be argv + 1
+ */
 
 #endif /* SPL_FLAGS_H */
 
 /*
- * ===================
- * | Implementations |
- * ===================
-*/
+ *  ___                 _                           _        _   _
+ * |_ _|_ __ ___  _ __ | | ___ _ __ ___   ___ _ __ | |_ __ _| |_(_) ___  _ __
+ *  | || '_ ` _ \| '_ \| |/ _ \ '_ ` _ \ / _ \ '_ \| __/ _` | __| |/ _ \| '_ \
+ *  | || | | | | | |_) | |  __/ | | | | |  __/ | | | || (_| | |_| | (_) | | | |
+ * |___|_| |_| |_| .__/|_|\___|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
+ *               |_|
+ */
 
 #ifdef SPL_FLAGS_IMPLEMENTATION
+
+#include <stdlib.h>
 
 /* constants */
 #ifndef SPL_FLAGS_MAX_C
@@ -163,7 +242,7 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
  * ARG_LONG_NON_EQUAL, ARG_LONG_EQUAL
  *
  * Returns 0 if it isn't a defined argument
-*/
+ */
 int
 is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 {
@@ -193,7 +272,7 @@ spl_flags_parse(int argc, char **argv)
 	flag *cur_flag;
 	int is_found;
 
-	for (int i = 1; i < argc; i++) {
+	for (int i = 0; i < argc; i++) {
 		cur_argv = argv[i];
 		/* check if the current argument isn't a flag */
 		if (cur_argv[0] != '-') {
@@ -210,7 +289,7 @@ cur_argv_next_char:
 
 			cur_flag = flags + j;
 			int flag_type = is_valid_defined_flag(cur_argv,
-				cur_flag->short_hand, cur_flag->long_hand);
+					cur_flag->short_hand, cur_flag->long_hand);
 
 			switch (flag_type) {
 			case ARG_SHORT_NON_EQUAL:
@@ -301,7 +380,7 @@ cur_argv_next_char:
  * Print all the current flags defined, it's details and it's current value
  *
  * Also prints all the non-flag arguments and non-defined flag arguments
-*/
+ */
 void
 spl_flags_debug_print(FILE *restrict stream)
 {
@@ -324,23 +403,23 @@ spl_flags_debug_print(FILE *restrict stream)
 		}
 
 		fprintf(stream, "\tShort hand: %c\tLong hand: %s\n",
-			flags[i].short_hand, flags[i].long_hand);
+				flags[i].short_hand, flags[i].long_hand);
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
 			fprintf(stream, "'%d' (Default: '%d')",
-				*((int *)flags[i].value),
-				flags[i].value_default.value_int);
+					*((int *)flags[i].value),
+					flags[i].value_default.value_int);
 			break;
 		case TYPE_INT:
 			fprintf(stream, "'%d' (Default: '%d')",
-				*((int *)flags[i].value),
-				flags[i].value_default.value_int);
+					*((int *)flags[i].value),
+					flags[i].value_default.value_int);
 			break;
 		case TYPE_STR:
 			fprintf(stream, "'%s' (Default: '%s')",
-				*((char **)flags[i].value),
-				flags[i].value_default.value_str);
+					*((char **)flags[i].value),
+					flags[i].value_default.value_str);
 		}
 
 		fprintf(stream, "\n\n");
@@ -389,4 +468,4 @@ spl_flags_debug_print(FILE *restrict stream)
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * For more information, please refer to <http://unlicense.org/>
-*/
+ */
