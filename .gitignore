@@ -1,5 +1,7 @@
+spl.c
+spl.o
 spl-test.c
-spl-test
 spl-test.o
+spl-test
 Makefile
 config.mk
