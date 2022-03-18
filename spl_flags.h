@@ -156,6 +156,13 @@ spl_flags_print_flags(FILE *restrict stream);
  * all the flags definedw.
  */
 
+#ifdef SPL_FLAGS_DEBUG
+
+extern void
+spl_flags_debug_print(FILE *restrict stream);
+
+#endif /* SPL_FLAGS_DEBUG */
+
 #endif /* SPL_FLAGS_H */
 
 /*
@@ -417,8 +424,6 @@ spl_flags_print_flags(FILE *restrict stream)
 	}
 }
 
-#endif /* SPL_FLAGS_IMPLEMENTATION */
-
 #ifdef SPL_FLAGS_DEBUG
 
 /*
@@ -483,6 +488,8 @@ spl_flags_debug_print(FILE *restrict stream)
 }
 
 #endif /* SPL_FLAGS_DEBUG */
+
+#endif /* SPL_FLAGS_IMPLEMENTATION */
 
 /*
  * ===============================================
