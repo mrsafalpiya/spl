@@ -53,14 +53,16 @@
 #ifndef SPL_FLAGS_H
 #define SPL_FLAGS_H
 
+#include <stdio.h>
+
 /*
  *******************************************************************************
  ================================ Global Variables =============================
  *******************************************************************************
  */
 
-static char *non_flag_arguments[512];
-static int non_flag_arguments_c = 0;
+extern char *non_flag_arguments[512];
+extern int non_flag_arguments_c;
 /*
  * non_flag_arguments is an array of pointers in the array of argv which were
  * non-flags
@@ -68,8 +70,8 @@ static int non_flag_arguments_c = 0;
  * non_flag_arguments_c is the counter of pointers defined in non_flag_arguments
  */
 
-static char *non_defined_flags[512];
-static int non_defined_flags_c = 0;
+extern char *non_defined_flags[512];
+extern int non_defined_flags_c;
 /*
  * non_defined_flags is an array of pointers in the array of argv which were
  * of type flag but not defined through the flag defining functions
@@ -207,6 +209,11 @@ typedef struct {
 static flag flags[SPL_FLAGS_MAX_C];
 static int flags_c;
 
+char *non_flag_arguments[512];
+int non_flag_arguments_c;
+char *non_defined_flags[512];
+int non_defined_flags_c;
+
 /* functions */
 void
 new_flag(void *value, char short_hand, const char *long_hand, const char *info)
@@ -284,6 +291,9 @@ spl_flags_parse(int argc, char **argv)
 	char *cur_argv;
 	flag *cur_flag;
 	int is_found;
+
+	non_flag_arguments_c = 0;
+	non_defined_flags_c = 0;
 
 	for (int i = 1; i < argc; i++) {
 		cur_argv = argv[i];
@@ -410,8 +420,6 @@ spl_flags_print_flags(FILE *restrict stream)
 #endif /* SPL_FLAGS_IMPLEMENTATION */
 
 #ifdef SPL_FLAGS_DEBUG
-
-#include <stdio.h>
 
 /*
  * Print all the current flags defined, it's details and it's current value
