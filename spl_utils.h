@@ -48,6 +48,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <errno.h>
 
 /* = functions = */
 
@@ -85,12 +86,15 @@ spl_utils_die(const char *fmt, ...)
 
 	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
 		fputc(' ', stderr);
-		perror(NULL);
+		if (errno != 0)
+			perror(NULL);
+		else
+			fprintf(stderr, "Something went wrong\n");
 	} else {
 		fputc('\n', stderr);
 	}
 
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 #endif /* SPL_UTILS_IMPLEMENTATION */
