@@ -368,7 +368,6 @@ cur_argv_next_char:
 						(void *)(cur_argv);
 				}
 
-				++i;
 				is_found = 1;
 
 				break;
