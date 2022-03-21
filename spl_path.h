@@ -131,7 +131,7 @@ spl_path_base(char *path, char *base);
  * If the path is empty, Base returns ".".
  * If the path consists entirely of slashes, Base returns "/".
  *
- * If the dir passed is NULL, a new string is malloc'ed which has to be free'ed
+ * If the base passed is NULL, a new string is malloc'ed which has to be free'ed
  * later.
 */
 
