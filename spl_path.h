@@ -269,6 +269,7 @@ spl_path_join(char *path, ...)
 	cur_path = path;
 	n = 0;
 
+	strcpy(buf_string, "");
 	do {
 		/* ignore empty paths */
 		if (cur_path[0] != '\0') {
