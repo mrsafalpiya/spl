@@ -404,23 +404,23 @@ void
 spl_flags_print_flags(FILE *restrict stream)
 {
 	for (int i = 0; i < flags_c; i++) {
-		fprintf(stream, "-%c/--%s", flags[i].short_hand, flags[i].long_hand);
+		fprintf(stream, "  -%c, --%s (Default: ", flags[i].short_hand, flags[i].long_hand);
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
-			fprintf(stream, " (%s)",
+			fprintf(stream, "%s",
 					flags[i].value_default.value_int ? "on" : "off");
 			break;
 		case TYPE_INT:
-			fprintf(stream, "=%d",
+			fprintf(stream, "%d",
 					flags[i].value_default.value_int);
 			break;
 		case TYPE_STR:
-			fprintf(stream, "=%s",
+			fprintf(stream, "'%s'",
 					flags[i].value_default.value_str);
 		}
 
-		fprintf(stream, ": %s\n", flags[i].info);
+		fprintf(stream, ")\t%s\n", flags[i].info);
 	}
 }
 
