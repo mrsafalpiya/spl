@@ -3,7 +3,7 @@
  * no warranty implied; use at your own risk
 
  * See end of file for license information.
-*/
+ */
 
 /*
  *  ___       _                 _            _   _
@@ -19,13 +19,13 @@
  * https://cs.opensource.google/go/go/+/refs/tags/go1.17.8:src/path/path.go
  *
  * Author: Safal Piya
-*/
+ */
 
 /*
  * Take a look at the "Tips for scanning the library" section of the `README.md`
  * file for some tips and tricks to scan this library header file quickly and
  * easily
-*/
+ */
 
 
 /*
@@ -41,7 +41,7 @@
  *
  * before you include this file in *one* C or C++ file to create the
  * implementation.
-*/
+ */
 
 /*
  *  _   _                _                 __ _ _
@@ -50,7 +50,7 @@
  * |  _  |  __/ (_| | (_| |  __/ | |_____|  _| | |  __/
  * |_| |_|\___|\__,_|\__,_|\___|_|       |_| |_|_|\___|
  *
-*/
+ */
 
 #ifndef SPL_PATH_H
 #define SPL_PATH_H
@@ -59,7 +59,7 @@
  *******************************************************************************
  =================================== Functions =================================
  *******************************************************************************
-*/
+ */
 
 char *
 spl_path_clean(char *path, int len, char *clean_path);
@@ -89,7 +89,7 @@ spl_path_clean(char *path, int len, char *clean_path);
  *
  * If the clean_path passed is NULL, a new string is malloc'ed which has to be
  * free'ed later.
-*/
+ */
 
 char *
 spl_path_join(char *path, ...);
@@ -105,7 +105,7 @@ spl_path_join(char *path, ...);
  * elements are empty, Join returns an empty string.
  *
  * Function returns a new malloc'ed string which has to be free'ed later.
-*/
+ */
 
 char *
 spl_path_dir(char *path, char *dir);
@@ -120,10 +120,10 @@ spl_path_dir(char *path, char *dir);
  *
  * If the dir passed is NULL, a new string is malloc'ed which has to be free'ed
  * later.
-*/
+ */
 
 char *
-spl_path_base(char *path, char *base);
+spl_path_base(char *path);
 /*
  * Returns the last element of path.
  * Trailing slashes are removed before extracting the last element.
@@ -131,9 +131,8 @@ spl_path_base(char *path, char *base);
  * If the path is empty, Base returns ".".
  * If the path consists entirely of slashes, Base returns "/".
  *
- * If the base passed is NULL, a new string is malloc'ed which has to be free'ed
- * later.
-*/
+ * Returned string is a new string malloc'ed which has to be free'ed later.
+ */
 
 #endif /* SPL_PATH_H */
 
@@ -144,7 +143,7 @@ spl_path_base(char *path, char *base);
  *  | || | | | | | |_) | |  __/ | | | | |  __/ | | | || (_| | |_| | (_) | | | |
  * |___|_| |_| |_| .__/|_|\___|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
  *               |_|
-*/
+ */
 
 #ifdef SPL_PATH_IMPLEMENTATION
 
@@ -163,7 +162,7 @@ spl_path_clean(char *path, int len, char *clean_path)
 	 * writing to buf; w = index of next byte to write
 	 * dotdot = index in buf_string where .. must stop, either because it is
 	 * the leading slash or it is a leading ../../.. prefix.
-	*/
+	 */
 
 	/* Check if the clean_path is NULL and allocate memory for the buffer */
 	if (clean_path == NULL)
@@ -313,23 +312,27 @@ spl_path_dir(char *path, char *dir)
 }
 
 char *
-spl_path_base(char *path, char *base)
+spl_path_base(char *path)
 {
+	char *buf_string, *ret_string;
 	int i;
 
 	/* clean the path */
-	base = spl_path_clean(path, 0, base);
+	buf_string = spl_path_clean(path, 0, NULL);
 
 	/* extract the last element */
-	i = last_slash_index(base);
+	i = last_slash_index(buf_string);
 	if (i >= 0)
-		base += i + 1;
+		ret_string = strdup(buf_string + i + 1);
+	else
+		ret_string = strdup(buf_string);
 
 	/* if empty now, it had only slashes */
-	if (base[0] == '\0')
-		strcpy(base, "/");
+	if (ret_string[0] == '\0')
+		strcpy(ret_string, "/");
 
-	return base;
+	free(buf_string);
+	return ret_string;
 }
 
 #endif /* SPL_PATH_IMPLEMENTATION */
@@ -363,4 +366,4 @@ spl_path_base(char *path, char *base)
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * For more information, please refer to <http://unlicense.org/>
-*/
+ */
