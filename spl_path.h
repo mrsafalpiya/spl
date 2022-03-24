@@ -134,6 +134,14 @@ spl_path_base(char *path);
  * Returned string is a new string malloc'ed which has to be free'ed later.
  */
 
+void
+spl_path_change_base(char *path, char *new_base);
+/*
+ * Changes the base of the given string `path` to a new base `base`.
+ *
+ * In case of empty or base-only string, the `new_base` is filled in the `path`.
+ */
+
 #endif /* SPL_PATH_H */
 
 /*
@@ -333,6 +341,25 @@ spl_path_base(char *path)
 
 	free(buf_string);
 	return ret_string;
+}
+
+void
+spl_path_change_base(char *path, char *new_base)
+{
+	int n;
+
+	n = last_slash_index(path);
+
+	/* in case of empty or base-only string */
+	if (n == -1){
+		strcpy(path, new_base);
+		return;
+	}
+
+	if (n > 0) {
+		path[++n] = '\0';
+		strcat(path, new_base);
+	}
 }
 
 #endif /* SPL_PATH_IMPLEMENTATION */
