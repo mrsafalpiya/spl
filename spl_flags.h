@@ -141,12 +141,15 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
  * spl_flags_str(foo, 'f', "foo", "foobar");
  */
 
-void
+int
 spl_flags_parse(int argc, char **argv);
 /*
  * spl_flags_parse parses the argv for all the defined flags *previously*.
  * Meaning this function should be called at last AFTER defining all the flags
- * from the functions defined above
+ * from the functions defined above.
+ *
+ * Returns 0 if everything went well. But in the case of any problem with the
+ * argument, the index of the problematic argv is returned.
  */
 
 void
@@ -292,7 +295,7 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 	return 0;
 }
 
-void
+int
 spl_flags_parse(int argc, char **argv)
 {
 	char *cur_argv;
@@ -324,7 +327,20 @@ cur_argv_next_char:
 			switch (flag_type) {
 			case ARG_SHORT_NON_EQUAL:
 			case ARG_LONG_NON_EQUAL:
+				/* check if the current argv is the last */
+				if ((cur_flag->type != TYPE_TOGGLE) &&
+						(i == argc - 1))
+					return i;
+
 				switch (cur_flag->type) {
+				case TYPE_INT:
+					*((int *)cur_flag->value) =
+						atoi(argv[++i]);
+					break;
+				case TYPE_STR:
+					*((char **)cur_flag->value) =
+						(void *)(argv[++i]);
+					break;
 				case TYPE_TOGGLE:
 					*((int *)cur_flag->value) =
 						!*((int *)cur_flag->value);
@@ -339,14 +355,6 @@ cur_argv_next_char:
 					default:
 						break;
 					}
-					break;
-				case TYPE_INT:
-					*((int *)cur_flag->value) =
-						atoi(argv[++i]);
-					break;
-				case TYPE_STR:
-					*((char **)cur_flag->value) =
-						(void *)(argv[++i]);
 				}
 
 				is_found = 1;
@@ -397,6 +405,8 @@ cur_argv_next_char:
 			}
 		}
 	}
+
+	return 0;
 }
 
 void
