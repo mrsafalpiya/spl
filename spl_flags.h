@@ -159,6 +159,12 @@ spl_flags_print_flags(FILE *restrict stream);
  * all the flags defined.
  */
 
+void
+spl_flags_free(void);
+/*
+ * Free any dynamically allocated memory for flags.
+ */
+
 #ifdef SPL_FLAGS_DEBUG
 
 extern void
@@ -292,6 +298,7 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 	if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
 		return ARG_LONG_EQUAL;
 
+	free(long_hand_str);
 	return 0;
 }
 
@@ -382,7 +389,6 @@ cur_argv_next_char:
 				}
 
 				is_found = 1;
-
 				break;
 			default:
 				continue;
@@ -397,12 +403,19 @@ cur_argv_next_char:
 			++non_defined_flags_c;
 
 			/* check if the argument is a short or a long type */
+
+			/* I'm dynamically allocating non-defined args so as to
+			 * store short-args and not interfare with argv.
+			 *
+			 * TODO: Find a better way to handle this. */
 			if (argv[i][1] == '-') {
 				non_defined_flags[non_defined_flags_c - 1] =
-					argv[i];
+					strdup(argv[i]);
 			} else {
 				non_defined_flags[non_defined_flags_c - 1] =
-					strdup(cur_argv);
+					malloc(2 * sizeof(char));
+				*non_defined_flags[non_defined_flags_c - 1] =
+					cur_argv[0];
 				non_defined_flags[non_defined_flags_c - 1][1] =
 					'\0';
 				if (*(cur_argv + 1) != '\0')
@@ -436,6 +449,13 @@ spl_flags_print_flags(FILE *restrict stream)
 
 		fprintf(stream, ")\t%s\n", flags[i].info);
 	}
+}
+
+void
+spl_flags_free(void)
+{
+	for (int i = 0; i < non_defined_flags_c; i++)
+		free(non_defined_flags[i]);
 }
 
 #ifdef SPL_FLAGS_DEBUG
