@@ -68,12 +68,19 @@ main(int argc, char **argv)
 	/* define default values */
 	print_help = 0; /* default value for print_help, 1 to enable */
 	age = 69;  /* default value for age */
+
 	/* define flags */
 	spl_flags_toggle(&print_help, 'h', "help", "Print a help message");
-	spl_flags_int(&age, 'a', "age", "Define the age");
-	spl_flags_str(&university, 'u', "university", "Define the university");
+	spl_flags_int(&age, ' ', "age", "Define the age");
+	spl_flags_str(&university, 'u', NULL, "Define the university");
+
 	/* AFTER defining all the flags, parse flags from argv */
-	spl_flags_parse(argc, argv);
+	int parse_ret = spl_flags_parse(argc, argv);
+	if (parse_ret != 0) {
+		fprintf(stderr, "No value passed for the flag '%s'\n",
+				argv[parse_ret]);
+		return 1;
+	}
 
 	/* = MAIN OPERATIONS = */
 	if (print_help || non_flag_arguments_c < 1) {
@@ -82,6 +89,7 @@ main(int argc, char **argv)
 		spl_flags_print_flags(stdout);
 		return 0;
 	}
+
 	name = non_flag_arguments[0];
 	printf("Your name is '%s' aged %d and studying in '%s'\n",
 			name,
@@ -94,33 +102,37 @@ main(int argc, char **argv)
 }
 #endif
 /*
- * Here three flags 'help', 'age' and 'university' are defined. Usage of
- * `non_flag_arguments` is also demonstrated.
+ * Here three flags 'help', 'age' and 'university' are defined.
+ *
+ * Note that no short-hand argument is defined for `age` and no long-hand
+ * argument is defined for `university`.
+ *
+ * Usage of `non_flag_arguments` is also demonstrated.
  *
  * Output of this program is as follow:
  *
  * $ ./spl-test
  * Usage: ./spl-test name
  * Available flags are:
- *   -h, --help (Default: off)     Print a help message
- *   -a, --age (Default: 69)       Define the age
- *   -u, --university (Default: 'Hehe')    Define the university
+ *   -h, --help,  (Default: off)   Print a help message
+ *   --age,  (Default: 69) Define the age
+ *   -u,  (Default: 'Hehe')        Define the university
  *
- * $ ./spl-test Safal
- * Your name is 'Safal' aged 69 and studying in 'Hehe'
+ * $ ./spl-test safal
+ * Your name is 'safal' aged 69 and studying in 'Hehe'
  *
- * $ ./spl-test Safal -a 18 -u "Tribhuvan University"
- * Your name is 'Safal' aged 18 and studying in 'Tribhuvan University'
+ * $ ./spl-test safal --age 18 -u "Tribhuvan University"
+ * Your name is 'safal' aged 18 and studying in 'Tribhuvan University'
  *
- * $ ./spl-test Safal --age 18 --university "Tribhuvan University"
- * Your name is 'Safal' aged 18 and studying in 'Tribhuvan University'
+ * $ ./spl-test safal --age=18 -u="Tribhuvan University"
+ * Your name is 'safal' aged 69 and studying in 'Tribhuvan University'
  *
  * $ ./spl-test -h
  * Usage: ./spl-test name
  * Available flags are:
- *   -h, --help (Default: off)     Print a help message
- *   -a, --age (Default: 69)       Define the age
- *   -u, --university (Default: 'Hehe')    Define the university
+ *   -h, --help,  (Default: off)   Print a help message
+ *   --age,  (Default: 69) Define the age
+ *   -u,  (Default: 'Hehe')        Define the university
  */
 
 /*
@@ -372,15 +384,18 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 		return ARG_SHORT_NON_EQUAL;
 	}
 
-	long_hand_str = strdup(long_hand);
-	if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
-		return ARG_LONG_NON_EQUAL;
+	if (long_hand != NULL) {
+		long_hand_str = strdup(long_hand);
+		if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
+			return ARG_LONG_NON_EQUAL;
 
-	strcat(long_hand_str, "=");
-	if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
-		return ARG_LONG_EQUAL;
+		strcat(long_hand_str, "=");
+		if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
+			return ARG_LONG_EQUAL;
 
-	free(long_hand_str);
+		free(long_hand_str);
+	}
+
 	return 0;
 }
 
@@ -513,7 +528,12 @@ void
 spl_flags_print_flags(FILE *restrict stream)
 {
 	for (int i = 0; i < flags_c; i++) {
-		fprintf(stream, "  -%c, --%s (Default: ", flags[i].short_hand, flags[i].long_hand);
+		fprintf(stream, "  ");
+		if (flags[i].short_hand != ' ')
+			fprintf(stream, "-%c, ", flags[i].short_hand);
+		if (flags[i].long_hand != NULL)
+			fprintf(stream, "--%s, ", flags[i].long_hand);
+		fprintf(stream, " (Default: ");
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
