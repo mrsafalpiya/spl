@@ -12,7 +12,7 @@
  *  | || | | | |_| | | (_) | (_| | |_| | (__| |_| | (_) | | | |
  * |___|_| |_|\__|_|  \___/ \__,_|\__,_|\___|\__|_|\___/|_| |_|
  *
- * SPL_FLAGS.H - GNU-style argument parsing with golang like functions
+ * SPL_FLAGS.H - GNU-style argument parsing with golang like functions.
  *
  * Author: Safal Piya
  */
@@ -20,7 +20,7 @@
 /*
  * Take a look at the "Tips for scanning the library" section of the `README.md`
  * file for some tips and tricks to scan this library header file quickly and
- * easily
+ * easily.
  */
 
 /*
@@ -37,8 +37,8 @@
  * before you include this file in *one* C or C++ file to create the
  * implementation.
  *
- * Define the SPL_FLAGS_MAX_C to the number of flags you are going to have
- * The default is 128
+ * Define the SPL_FLAGS_MAX_C to the number of flags you are going to have.
+ * The default is 128.
  */
 
 /*
@@ -65,18 +65,18 @@ extern char *non_flag_arguments[512];
 extern int non_flag_arguments_c;
 /*
  * non_flag_arguments is an array of pointers in the array of argv which were
- * non-flags
+ * non-flags.
  *
- * non_flag_arguments_c is the counter of pointers defined in non_flag_arguments
+ * non_flag_arguments_c is the counter of pointers defined in non_flag_arguments.
  */
 
 extern char *non_defined_flags[512];
 extern int non_defined_flags_c;
 /*
  * non_defined_flags is an array of pointers in the array of argv which were
- * of type flag but not defined through the flag defining functions
+ * of type flag but not defined through the flag defining functions.
  *
- * non_defined_flags_c is the counter of pointers defined in non_flag_arguments
+ * non_defined_flags_c is the counter of pointers defined in non_flag_arguments.
  */
 
 /*
@@ -89,48 +89,48 @@ void
 spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char *info);
 /*
  * spl_flags_toggle defines a flag of type toggle so that the value of the flag
- * gets set to the underlying variable pointed by value
+ * gets set to the underlying variable pointed by value.
  *
  * short_hand is a character defining the short way of inferring the flag in the
- * program argument
+ * program argument.
  *
  * long_hand is a string defining the long way of inferring the flag in the
- * program argument
+ * program argument.
  *
  * info is a piece of info that gets printed as the place holder in the help
- * section of the program
+ * section of the program.
  */
 
 void
 spl_flags_int(int *value, char short_hand, const char *long_hand, const char *info);
 /*
  * spl_flags_int defines a flag of type int so that the value of the flag gets
- * set to the underlying variable pointed by value
+ * set to the underlying variable pointed by value.
  *
  * short_hand is a character defining the short way of inferring the flag in the
- * program argument
+ * program argument.
  *
  * long_hand is a string defining the long way of inferring the flag in the
- * program argument
+ * program argument.
  *
  * info is a piece of info that gets printed as the place holder in the help
- * section of the program
+ * section of the program.
  */
 
 void
 spl_flags_str(char **value, char short_hand, const char *long_hand, const char *info);
 /*
  * spl_flags_str defines a flag of type string so that the value of the flag
- * gets set to the underlying variable pointed by value
+ * gets set to the underlying variable pointed by value.
  *
  * short_hand is a character defining the short way of inferring the flag in the
- * program argument
+ * program argument.
  *
  * long_hand is a string defining the long way of inferring the flag in the
- * program argument
+ * program argument.
  *
  * info is a piece of info that gets printed as the place holder in the help
- * section of the program
+ * section of the program.
  *
  * NOTE: The value passed SHOULD have a initial value be it empty or a specific
  * value.
@@ -156,7 +156,7 @@ void
 spl_flags_print_flags(FILE *restrict stream);
 /*
  * spl_flags_print_flags prints to the stream the type, defaults and info about
- * all the flags definedw.
+ * all the flags defined.
  */
 
 #ifdef SPL_FLAGS_DEBUG
@@ -264,14 +264,14 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
 }
 
 /*
- * Checks if the given argv is a valid defined flag
+ * Checks if the given argv is a valid defined flag.
  *
- * Make sure the argv points to the data after the dash -
+ * Make sure the argv points to the data after the *first* dash -.
  *
  * Returns the type of argument it is: ARG_SHORT_NON_EQUAL, ARG_SHORT_EQUAL,
  * ARG_LONG_NON_EQUAL, ARG_LONG_EQUAL
  *
- * Returns 0 if it isn't a defined argument
+ * Returns 0 if it isn't a defined argument.
  */
 int
 is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
@@ -346,8 +346,10 @@ cur_argv_next_char:
 						!*((int *)cur_flag->value);
 					switch (flag_type) {
 					case ARG_SHORT_NON_EQUAL:
-						/* check if secondary flags are
-						 * available in the current argv */
+						/*
+						 * check if secondary flags are
+						 * available in the current argv
+						 */
 						if (*(cur_argv + 1) != '\0') {
 							++cur_argv;
 							continue;
@@ -361,12 +363,15 @@ cur_argv_next_char:
 				break;
 			case ARG_SHORT_EQUAL:
 			case ARG_LONG_EQUAL:
-				cur_argv = strchr(cur_argv, '='); /* Correct me if I'm wrong but it SHOULD return a pointer to the = char. Right? */
+				cur_argv = strchr(cur_argv, '=');
 				++cur_argv; /* point to the actual data */
 
 				switch (cur_flag->type) {
 				case TYPE_TOGGLE:
-					continue; /* a toggle type cannot reach this code */
+					/*
+					 * a toggle type cannot reach this code
+					 */
+					continue;
 				case TYPE_INT:
 					*((int *)cur_flag->value) =
 						atoi(cur_argv);
@@ -436,9 +441,9 @@ spl_flags_print_flags(FILE *restrict stream)
 #ifdef SPL_FLAGS_DEBUG
 
 /*
- * Print all the current flags defined, it's details and it's current value
+ * Print all the current flags defined, it's details and it's current value.
  *
- * Also prints all the non-flag arguments and non-defined flag arguments
+ * Also prints all the non-flag arguments and non-defined flag arguments.
  */
 void
 spl_flags_debug_print(FILE *restrict stream)
