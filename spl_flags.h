@@ -42,6 +42,88 @@
  */
 
 /*
+ *  _____                           _
+ * | ____|_  ____ _ _ __ ___  _ __ | | ___
+ * |  _| \ \/ / _` | '_ ` _ \| '_ \| |/ _ \
+ * | |___ >  < (_| | | | | | | |_) | |  __/
+ * |_____/_/\_\__,_|_| |_| |_| .__/|_|\___|
+ *                          |_|
+ * A simple example of program using this library is given below:
+ */
+#if 0
+#include <stdio.h>
+
+/* spl - https://github.com/mrsafalpiya/spl */
+#define SPL_FLAGS_IMPLEMENTATION
+#include "spl_flags.h"
+
+int
+main(int argc, char **argv)
+{
+	int print_help, age;
+	char *university = "Hehe"; /* default value for univ */
+	char *name;
+
+	/* = FLAGS = */
+	/* define default values */
+	print_help = 0; /* default value for print_help, 1 to enable */
+	age = 69;  /* default value for age */
+	/* define flags */
+	spl_flags_toggle(&print_help, 'h', "help", "Print a help message");
+	spl_flags_int(&age, 'a', "age", "Define the age");
+	spl_flags_str(&university, 'u', "university", "Define the university");
+	/* AFTER defining all the flags, parse flags from argv */
+	spl_flags_parse(argc, argv);
+
+	/* = MAIN OPERATIONS = */
+	if (print_help || non_flag_arguments_c < 1) {
+		printf("Usage: %s name\n", argv[0]);
+		printf("Available flags are:\n");
+		spl_flags_print_flags(stdout);
+		return 0;
+	}
+	name = non_flag_arguments[0];
+	printf("Your name is '%s' aged %d and studying in '%s'\n",
+			name,
+			age,
+			university);
+
+	/* = CLEANUP = */
+	spl_flags_free();
+	return 0;
+}
+#endif
+/*
+ * Here three flags 'help', 'age' and 'university' are defined. Usage of
+ * `non_flag_arguments` is also demonstrated.
+ *
+ * Output of this program is as follow:
+ *
+ * $ ./spl-test
+ * Usage: ./spl-test name
+ * Available flags are:
+ *   -h, --help (Default: off)     Print a help message
+ *   -a, --age (Default: 69)       Define the age
+ *   -u, --university (Default: 'Hehe')    Define the university
+ *
+ * $ ./spl-test Safal
+ * Your name is 'Safal' aged 69 and studying in 'Hehe'
+ *
+ * $ ./spl-test Safal -a 18 -u "Tribhuvan University"
+ * Your name is 'Safal' aged 18 and studying in 'Tribhuvan University'
+ *
+ * $ ./spl-test Safal --age 18 --university "Tribhuvan University"
+ * Your name is 'Safal' aged 18 and studying in 'Tribhuvan University'
+ *
+ * $ ./spl-test -h
+ * Usage: ./spl-test name
+ * Available flags are:
+ *   -h, --help (Default: off)     Print a help message
+ *   -a, --age (Default: 69)       Define the age
+ *   -u, --university (Default: 'Hehe')    Define the university
+ */
+
+/*
  *  _   _                _                 __ _ _
  * | | | | ___  __ _  __| | ___ _ __      / _(_) | ___
  * | |_| |/ _ \/ _` |/ _` |/ _ \ '__|____| |_| | |/ _ \
