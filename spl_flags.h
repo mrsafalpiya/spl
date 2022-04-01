@@ -410,6 +410,15 @@ spl_flags_parse(int argc, char **argv)
 	non_defined_flags_c = 0;
 
 	for (int i = 1; i < argc; i++) {
+		/* check for double dash */
+		if (strcmp(argv[i], "--") == 0) {
+			for (int j = ++i; j < argc; j++) {
+				++non_flag_arguments_c;
+				non_flag_arguments[non_flag_arguments_c - 1] =
+					argv[j];
+			}
+			return 0;
+		}
 		cur_argv = argv[i];
 		/* check if the current argument isn't a flag */
 		if (cur_argv[0] != '-') {
