@@ -126,7 +126,7 @@ main(int argc, char **argv)
  * Your name is 'safal' aged 18 and studying in 'Tribhuvan University'
  *
  * $ ./spl-test safal --age=18 -u="Tribhuvan University"
- * Your name is 'safal' aged 69 and studying in 'Tribhuvan University'
+ * Your name is 'safal' aged 18 and studying in 'Tribhuvan University'
  *
  * $ ./spl-test safal --age 18 -u
  * No value passed for the flag 'u'
@@ -394,7 +394,8 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 			return ARG_LONG_NON_EQUAL;
 
 		strcat(long_hand_str, "=");
-		if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
+		if (argv[0] == '-' && (strncmp(argv + 1, long_hand_str,
+						strlen(long_hand_str)) == 0))
 			return ARG_LONG_EQUAL;
 
 		free(long_hand_str);
