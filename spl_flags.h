@@ -61,12 +61,13 @@ int
 main(int argc, char **argv)
 {
 	int print_help, age;
-	char *university = "Hehe"; /* default value for univ */
+	char *university;
 	char *name;
 
 	/* = FLAGS = */
 	/* define default values */
 	print_help = 0; /* default value for print_help, 1 to enable */
+	university = "Hehe"; /* default value for university */
 	age = 69;  /* default value for age */
 
 	/* define flags */
@@ -75,10 +76,10 @@ main(int argc, char **argv)
 	spl_flags_str(&university, 'u', NULL, "Define the university");
 
 	/* AFTER defining all the flags, parse flags from argv */
-	int parse_ret = spl_flags_parse(argc, argv);
-	if (parse_ret != 0) {
+	char *parse_ret = spl_flags_parse(argc, argv);
+	if (parse_ret != NULL) {
 		fprintf(stderr, "No value passed for the flag '%s'\n",
-				argv[parse_ret]);
+				parse_ret);
 		return 1;
 	}
 
@@ -126,6 +127,9 @@ main(int argc, char **argv)
  *
  * $ ./spl-test safal --age=18 -u="Tribhuvan University"
  * Your name is 'safal' aged 69 and studying in 'Tribhuvan University'
+ *
+ * $ ./spl-test safal --age 18 -u
+ * No value passed for the flag 'u'
  *
  * $ ./spl-test -h
  * Usage: ./spl-test name
@@ -235,15 +239,15 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
  * spl_flags_str(foo, 'f', "foo", "foobar");
  */
 
-int
+char *
 spl_flags_parse(int argc, char **argv);
 /*
  * spl_flags_parse parses the argv for all the defined flags *previously*.
  * Meaning this function should be called at last AFTER defining all the flags
  * from the functions defined above.
  *
- * Returns 0 if everything went well. But in the case of any problem with the
- * argument, the index of the problematic argv is returned.
+ * Returns NULL if everything went well. But in the case of any problem with the
+ * argument, pointer to the problematic argv is returned.
  */
 
 void
@@ -399,7 +403,7 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 	return 0;
 }
 
-int
+char *
 spl_flags_parse(int argc, char **argv)
 {
 	char *cur_argv;
@@ -417,7 +421,7 @@ spl_flags_parse(int argc, char **argv)
 				non_flag_arguments[non_flag_arguments_c - 1] =
 					argv[j];
 			}
-			return 0;
+			return NULL;
 		}
 		cur_argv = argv[i];
 		/* check if the current argument isn't a flag */
@@ -443,7 +447,7 @@ cur_argv_next_char:
 				/* check if the current argv is the last */
 				if ((cur_flag->type != TYPE_TOGGLE) &&
 						(i == argc - 1))
-					return i;
+					return cur_argv;
 
 				switch (cur_flag->type) {
 				case TYPE_INT:
@@ -530,7 +534,7 @@ cur_argv_next_char:
 		}
 	}
 
-	return 0;
+	return NULL;
 }
 
 void
