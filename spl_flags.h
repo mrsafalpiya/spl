@@ -55,6 +55,7 @@
 
 /* spl - https://github.com/mrsafalpiya/spl */
 #define SPL_FLAGS_IMPLEMENTATION
+#define SPL_FLAGS_MAX_C 3 /* can be avoided if there are less than 128 flags */
 #include "spl_flags.h"
 
 int
@@ -183,7 +184,7 @@ extern int non_defined_flags_c;
  *******************************************************************************
  */
 
-void
+int
 spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char *info);
 /*
  * spl_flags_toggle defines a flag of type toggle so that the value of the flag
@@ -197,9 +198,12 @@ spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char 
  *
  * info is a piece of info that gets printed as the place holder in the help
  * section of the program.
+ *
+ * Returns 0 if successful or -1 if the number of flags defined exceeds
+ * `SPL_FLAGS_MAX_C`.
  */
 
-void
+int
 spl_flags_int(int *value, char short_hand, const char *long_hand, const char *info);
 /*
  * spl_flags_int defines a flag of type int so that the value of the flag gets
@@ -213,9 +217,12 @@ spl_flags_int(int *value, char short_hand, const char *long_hand, const char *in
  *
  * info is a piece of info that gets printed as the place holder in the help
  * section of the program.
+ *
+ * Returns 0 if successful or -1 if the number of flags defined exceeds
+ * `SPL_FLAGS_MAX_C`.
  */
 
-void
+int
 spl_flags_str(char **value, char short_hand, const char *long_hand, const char *info);
 /*
  * spl_flags_str defines a flag of type string so that the value of the flag
@@ -237,6 +244,9 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
  *
  * char *foo = "";
  * spl_flags_str(foo, 'f', "foo", "foobar");
+ *
+ * Returns 0 if successful or -1 if the number of flags defined exceeds
+ * `SPL_FLAGS_MAX_C`.
  */
 
 char *
@@ -303,12 +313,6 @@ typedef enum {
 	TYPE_STR,
 } flag_type;
 
-/* unions */
-typedef union {
-	int   value_int;
-	char  *value_str;
-} flag_value;
-
 /* structs */
 typedef struct {
 	flag_type   type;
@@ -316,7 +320,7 @@ typedef struct {
 	const char  *long_hand;
 	const char  *info;
 	void        *value;
-	flag_value  value_default;
+	void        *value_default;
 } flag;
 
 /* global variables */
@@ -329,42 +333,74 @@ char *non_defined_flags[512];
 int non_defined_flags_c;
 
 /* functions */
-void
+/*
+ * `Creates` a new flag by filling out the given details in the new flag's
+ * index.
+ *
+ * Note: Although the value is filled out, the type of data and default value
+ * has to be filled up by the parent function.
+ *
+ * Returns the index of new flag created. In case of the new flag index being
+ * greater than `SPL_FLAGS_MAX_C`, -1 is returned.
+ */
+int
 new_flag(void *value, char short_hand, const char *long_hand, const char *info)
 {
-	++flags_c;
+	int new_flag_index;
 
-	flags[flags_c - 1].short_hand = short_hand;
-	flags[flags_c - 1].long_hand = long_hand;
-	flags[flags_c - 1].value = value;
-	flags[flags_c - 1].info = info;
+	new_flag_index = flags_c++;
+	if (new_flag_index >= SPL_FLAGS_MAX_C)
+		return -1;
+
+	flags[new_flag_index].short_hand = short_hand;
+	flags[new_flag_index].long_hand = long_hand;
+	flags[new_flag_index].value = value;
+	flags[new_flag_index].value_default = value;
+	flags[new_flag_index].info = info;
+
+	return new_flag_index;
 }
 
-void
+int
 spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char *info)
 {
-	new_flag((void *)value, short_hand, long_hand, info);
+	int new_flag_index;
 
-	flags[flags_c - 1].type = TYPE_TOGGLE;
-	flags[flags_c - 1].value_default.value_int = *value;
+	new_flag_index = new_flag((void *)value, short_hand, long_hand, info);
+	if (new_flag_index < 0)
+		return -1;
+
+	flags[new_flag_index].type = TYPE_TOGGLE;
+
+	return 0;
 }
 
-void
+int
 spl_flags_int(int *value, char short_hand, const char *long_hand, const char *info)
 {
-	new_flag((void *)value, short_hand, long_hand, info);
+	int new_flag_index;
 
-	flags[flags_c - 1].type = TYPE_INT;
-	flags[flags_c - 1].value_default.value_int = *value;
+	new_flag_index = new_flag((void *)value, short_hand, long_hand, info);
+	if (new_flag_index < 0)
+		return -1;
+
+	flags[new_flag_index].type = TYPE_INT;
+
+	return 0;
 }
 
-void
+int
 spl_flags_str(char **value, char short_hand, const char *long_hand, const char *info)
 {
-	new_flag((void *)value, short_hand, long_hand, info);
+	int new_flag_index;
 
-	flags[flags_c - 1].type = TYPE_STR;
-	flags[flags_c - 1].value_default.value_str = *value;
+	new_flag_index = new_flag((void *)value, short_hand, long_hand, info);
+	if (new_flag_index < 0)
+		return -1;
+
+	flags[new_flag_index].type = TYPE_STR;
+
+	return 0;
 }
 
 /*
@@ -552,16 +588,16 @@ spl_flags_print_flags(FILE *restrict stream)
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
-			fprintf(stream, "%s",
-					flags[i].value_default.value_int ? "on" : "off");
+			fprintf(stream, "%s", *((int *)flags[i].value_default) ?
+					"on" : "off");
 			break;
 		case TYPE_INT:
 			fprintf(stream, "%d",
-					flags[i].value_default.value_int);
+					*((int *)flags[i].value_default));
 			break;
 		case TYPE_STR:
 			fprintf(stream, "'%s'",
-					flags[i].value_default.value_str);
+					*((char **)flags[i].value_default));
 		}
 
 		fprintf(stream, ")\t%s\n", flags[i].info);
@@ -610,17 +646,17 @@ spl_flags_debug_print(FILE *restrict stream)
 		case TYPE_TOGGLE:
 			fprintf(stream, "'%d' (Default: '%d')",
 					*((int *)flags[i].value),
-					flags[i].value_default.value_int);
+					*((int *)flags[i].value_default));
 			break;
 		case TYPE_INT:
 			fprintf(stream, "'%d' (Default: '%d')",
 					*((int *)flags[i].value),
-					flags[i].value_default.value_int);
+					*((int)flags[i].value_default));
 			break;
 		case TYPE_STR:
 			fprintf(stream, "'%s' (Default: '%s')",
 					*((char **)flags[i].value),
-					flags[i].value_default.value_str);
+					(char *)flags[i].value_default);
 		}
 
 		fprintf(stream, "\n\n");
