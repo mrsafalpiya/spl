@@ -380,8 +380,6 @@ spl_flags_str(char **value, char short_hand, const char *long_hand, const char *
 int
 is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 {
-	char *long_hand_str;
-
 	if (argv[0] == short_hand) {
 		if (argv[1] == '=')
 			return ARG_SHORT_EQUAL;
@@ -389,16 +387,19 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 	}
 
 	if (long_hand != NULL) {
-		long_hand_str = strdup(long_hand);
-		if (argv[0] == '-' && (strcmp(argv + 1, long_hand_str) == 0))
-			return ARG_LONG_NON_EQUAL;
-
-		strcat(long_hand_str, "=");
-		if (argv[0] == '-' && (strncmp(argv + 1, long_hand_str,
-						strlen(long_hand_str)) == 0))
-			return ARG_LONG_EQUAL;
-
-		free(long_hand_str);
+		int long_hand_len = strlen(long_hand);
+		if (argv[0] == '-' && (strncmp(argv + 1, long_hand,
+						long_hand_len - 1) == 0)) {
+			switch (argv[long_hand_len + 1]) {
+			case '\0':
+				return ARG_LONG_NON_EQUAL;
+				break;
+			case '=':
+				return ARG_LONG_EQUAL;
+			default:
+				return 0;
+			}
+		}
 	}
 
 	return 0;
