@@ -584,23 +584,25 @@ spl_flags_print_flags(FILE *restrict stream)
 			fprintf(stream, "-%c, ", flags[i].short_hand);
 		if (flags[i].long_hand != NULL)
 			fprintf(stream, "--%s, ", flags[i].long_hand);
-		fprintf(stream, " (Default: ");
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
-			fprintf(stream, "%s", *((int *)flags[i].value_default) ?
+			fprintf(stream, " (Default: %s)", *((int *)flags[i].value_default) ?
 					"on" : "off");
 			break;
 		case TYPE_INT:
-			fprintf(stream, "%d",
+			fprintf(stream, " (Default: %d)",
 					*((int *)flags[i].value_default));
 			break;
 		case TYPE_STR:
-			fprintf(stream, "'%s'",
-					*((char **)flags[i].value_default));
+			if (*((char **)flags[i].value_default) != NULL) {
+				fprintf(stream, " (Default: '%s')",
+						*((char **)flags[i].value_default));
+			}
 		}
 
-		fprintf(stream, ")\t%s\n", flags[i].info);
+		fprintf(stream, "\t%s", flags[i].info);
+		fprintf(stream, "\n");
 	}
 }
 
@@ -651,7 +653,7 @@ spl_flags_debug_print(FILE *restrict stream)
 		case TYPE_INT:
 			fprintf(stream, "'%d' (Default: '%d')",
 					*((int *)flags[i].value),
-					*((int)flags[i].value_default));
+					*((int *)flags[i].value_default));
 			break;
 		case TYPE_STR:
 			fprintf(stream, "'%s' (Default: '%s')",
