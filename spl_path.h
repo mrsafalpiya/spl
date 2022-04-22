@@ -321,6 +321,22 @@ spl_path_dir(char *path, char *dir)
 }
 
 char *
+strdup(const char *s)
+{
+	char  *str;
+	size_t size;
+
+	size = strlen(s) + 1;
+	size++; /* Don't forget the null-terminator! */
+
+	str = malloc(size);
+	if (str) {
+		memcpy(str, s, size);
+	}
+	return str;
+}
+
+char *
 spl_path_base(char *path)
 {
 	char *buf_string, *ret_string;
