@@ -237,6 +237,7 @@ spl_path_clean(char *path, int len, char *clean_path)
 					break;
 				}
 			}
+			break;
 		default:
 			/*
 			 * real path element.
