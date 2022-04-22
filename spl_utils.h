@@ -84,7 +84,7 @@ spl_utils_die(const char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 
-	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
+	if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
 		fputc(' ', stderr);
 		if (errno != 0)
 			perror(NULL);

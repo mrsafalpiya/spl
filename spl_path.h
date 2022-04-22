@@ -27,7 +27,6 @@
  * easily
  */
 
-
 /*
  *  _   _
  * | | | |___  __ _  __ _  ___
@@ -164,7 +163,7 @@ char *
 spl_path_clean(char *path, int len, char *clean_path)
 {
 	char *buf_string;
-	int is_rooted, n, r, w, dotdot;
+	int   is_rooted, n, r, w, dotdot;
 	/*
 	 * reading from path; r = index of next byte to process
 	 * writing to buf; w = index of next byte to write
@@ -176,7 +175,7 @@ spl_path_clean(char *path, int len, char *clean_path)
 	if (clean_path == NULL)
 		buf_string = malloc(4096 * sizeof(char));
 	else {
-		buf_string = clean_path;
+		buf_string    = clean_path;
 		buf_string[0] = '\0'; /* abandon any previous string */
 	}
 
@@ -192,14 +191,14 @@ spl_path_clean(char *path, int len, char *clean_path)
 	else
 		n = strlen(path);
 
-	r = 0;
-	w = 0;
+	r      = 0;
+	w      = 0;
 	dotdot = 0;
 
 	if (is_rooted) {
 		buf_string[w++] = '/';
-		r = 1;
-		dotdot = 1;
+		r               = 1;
+		dotdot          = 1;
 	}
 
 	while (r < n) {
@@ -209,18 +208,20 @@ spl_path_clean(char *path, int len, char *clean_path)
 			r++;
 			break;
 		case '.':
-			if (r+1 == n || path[r+1] == '/') {
+			if (r + 1 == n || path[r + 1] == '/') {
 				/* . element */
 				r++;
 				break;
 			}
-			if (path[r+1] == '.' && (r+2 == n || path[r+2] == '/')) {
+			if (path[r + 1] == '.' &&
+			    (r + 2 == n || path[r + 2] == '/')) {
 				/* .. element: remove to last */
 				r += 2;
 				if (w > dotdot) {
 					/* can backtrack */
 					w--;
-					while (w > dotdot && buf_string[w] != '/')
+					while (w > dotdot &&
+					       buf_string[w] != '/')
 						w--;
 					break;
 				}
@@ -232,7 +233,7 @@ spl_path_clean(char *path, int len, char *clean_path)
 					}
 					buf_string[w++] = '.';
 					buf_string[w++] = '.';
-					dotdot = w;
+					dotdot          = w;
 					break;
 				}
 			}
@@ -267,14 +268,14 @@ char *
 spl_path_join(char *path, ...)
 {
 	va_list paths;
-	char *buf_string, *cur_path, *clean_path;
-	int n;
+	char   *buf_string, *cur_path, *clean_path;
+	int     n;
 
 	buf_string = malloc(4096 * sizeof(char));
 
 	va_start(paths, path);
 	cur_path = path;
-	n = 0;
+	n        = 0;
 
 	strcpy(buf_string, "");
 	do {
@@ -284,7 +285,7 @@ spl_path_join(char *path, ...)
 			strcat(buf_string, "/");
 			n++;
 		}
-	} while ((cur_path = va_arg(paths, char*)) != NULL);
+	} while ((cur_path = va_arg(paths, char *)) != NULL);
 
 	/* check if there are no valid argument passed */
 	if (n == 0) {
@@ -323,7 +324,7 @@ char *
 spl_path_base(char *path)
 {
 	char *buf_string, *ret_string;
-	int i;
+	int   i;
 
 	/* clean the path */
 	buf_string = spl_path_clean(path, 0, NULL);
@@ -351,7 +352,7 @@ spl_path_change_base(char *path, char *new_base)
 	n = last_slash_index(path);
 
 	/* in case of empty or base-only string */
-	if (n == -1){
+	if (n == -1) {
 		strcpy(path, new_base);
 		return;
 	}

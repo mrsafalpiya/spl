@@ -161,7 +161,7 @@ main(int argc, char **argv)
  */
 
 extern char *non_flag_arguments[512];
-extern int non_flag_arguments_c;
+extern int   non_flag_arguments_c;
 /*
  * non_flag_arguments is an array of pointers in the array of argv which were
  * non-flags.
@@ -170,7 +170,7 @@ extern int non_flag_arguments_c;
  */
 
 extern char *non_defined_flags[512];
-extern int non_defined_flags_c;
+extern int   non_defined_flags_c;
 /*
  * non_defined_flags is an array of pointers in the array of argv which were
  * of type flag but not defined through the flag defining functions.
@@ -185,7 +185,8 @@ extern int non_defined_flags_c;
  */
 
 int
-spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char *info);
+spl_flags_toggle(int *value, char short_hand, const char *long_hand,
+                 const char *info);
 /*
  * spl_flags_toggle defines a flag of type toggle so that the value of the flag
  * gets set to the underlying variable pointed by value.
@@ -204,7 +205,8 @@ spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char 
  */
 
 int
-spl_flags_int(int *value, char short_hand, const char *long_hand, const char *info);
+spl_flags_int(int *value, char short_hand, const char *long_hand,
+              const char *info);
 /*
  * spl_flags_int defines a flag of type int so that the value of the flag gets
  * set to the underlying variable pointed by value.
@@ -223,7 +225,8 @@ spl_flags_int(int *value, char short_hand, const char *long_hand, const char *in
  */
 
 int
-spl_flags_str(char **value, char short_hand, const char *long_hand, const char *info);
+spl_flags_str(char **value, char short_hand, const char *long_hand,
+              const char *info);
 /*
  * spl_flags_str defines a flag of type string so that the value of the flag
  * gets set to the underlying variable pointed by value.
@@ -301,10 +304,10 @@ spl_flags_debug_print(FILE *restrict stream);
 #define SPL_FLAGS_MAX_C 128
 #endif
 
-#define ARG_SHORT_NON_EQUAL  1
-#define ARG_SHORT_EQUAL      2
-#define ARG_LONG_NON_EQUAL   3
-#define ARG_LONG_EQUAL       4
+#define ARG_SHORT_NON_EQUAL 1
+#define ARG_SHORT_EQUAL     2
+#define ARG_LONG_NON_EQUAL  3
+#define ARG_LONG_EQUAL      4
 
 /* enums */
 typedef enum {
@@ -317,20 +320,20 @@ typedef enum {
 typedef struct {
 	flag_type   type;
 	char        short_hand;
-	const char  *long_hand;
-	const char  *info;
-	void        *value;
-	void        *value_default;
+	const char *long_hand;
+	const char *info;
+	void       *value;
+	void       *value_default;
 } flag;
 
 /* global variables */
 static flag flags[SPL_FLAGS_MAX_C];
-static int flags_c;
+static int  flags_c;
 
 char *non_flag_arguments[512];
-int non_flag_arguments_c;
+int   non_flag_arguments_c;
 char *non_defined_flags[512];
-int non_defined_flags_c;
+int   non_defined_flags_c;
 
 /* functions */
 /*
@@ -352,17 +355,18 @@ new_flag(void *value, char short_hand, const char *long_hand, const char *info)
 	if (new_flag_index >= SPL_FLAGS_MAX_C)
 		return -1;
 
-	flags[new_flag_index].short_hand = short_hand;
-	flags[new_flag_index].long_hand = long_hand;
-	flags[new_flag_index].value = value;
+	flags[new_flag_index].short_hand    = short_hand;
+	flags[new_flag_index].long_hand     = long_hand;
+	flags[new_flag_index].value         = value;
 	flags[new_flag_index].value_default = value;
-	flags[new_flag_index].info = info;
+	flags[new_flag_index].info          = info;
 
 	return new_flag_index;
 }
 
 int
-spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char *info)
+spl_flags_toggle(int *value, char short_hand, const char *long_hand,
+                 const char *info)
 {
 	int new_flag_index;
 
@@ -376,7 +380,8 @@ spl_flags_toggle(int *value, char short_hand, const char *long_hand, const char 
 }
 
 int
-spl_flags_int(int *value, char short_hand, const char *long_hand, const char *info)
+spl_flags_int(int *value, char short_hand, const char *long_hand,
+              const char *info)
 {
 	int new_flag_index;
 
@@ -390,7 +395,8 @@ spl_flags_int(int *value, char short_hand, const char *long_hand, const char *in
 }
 
 int
-spl_flags_str(char **value, char short_hand, const char *long_hand, const char *info)
+spl_flags_str(char **value, char short_hand, const char *long_hand,
+              const char *info)
 {
 	int new_flag_index;
 
@@ -424,8 +430,8 @@ is_valid_defined_flag(char *argv, char short_hand, char const *long_hand)
 
 	if (long_hand != NULL) {
 		int long_hand_len = strlen(long_hand);
-		if (argv[0] == '-' && (strncmp(argv + 1, long_hand,
-						long_hand_len - 1) == 0)) {
+		if (argv[0] == '-' &&
+		    (strncmp(argv + 1, long_hand, long_hand_len - 1) == 0)) {
 			switch (argv[long_hand_len + 1]) {
 			case '\0':
 				return ARG_LONG_NON_EQUAL;
@@ -446,10 +452,10 @@ spl_flags_parse(int argc, char **argv)
 {
 	char *cur_argv;
 	flag *cur_flag;
-	int is_found;
+	int   is_found;
 
 	non_flag_arguments_c = 0;
-	non_defined_flags_c = 0;
+	non_defined_flags_c  = 0;
 
 	for (int i = 1; i < argc; i++) {
 		/* check for double dash */
@@ -470,21 +476,23 @@ spl_flags_parse(int argc, char **argv)
 			continue;
 		}
 
-cur_argv_next_char:
+	cur_argv_next_char:
 		++cur_argv;
 		for (int j = 0; j < flags_c; j++) {
 			is_found = 0;
 
 			cur_flag = flags + j;
-			int flag_type = is_valid_defined_flag(cur_argv,
-					cur_flag->short_hand, cur_flag->long_hand);
+			int flag_type =
+				is_valid_defined_flag(cur_argv,
+			                              cur_flag->short_hand,
+			                              cur_flag->long_hand);
 
 			switch (flag_type) {
 			case ARG_SHORT_NON_EQUAL:
 			case ARG_LONG_NON_EQUAL:
 				/* check if the current argv is the last */
 				if ((cur_flag->type != TYPE_TOGGLE) &&
-						(i == argc - 1))
+				    (i == argc - 1))
 					return cur_argv;
 
 				switch (cur_flag->type) {
@@ -554,7 +562,6 @@ cur_argv_next_char:
 			 * short-args.
 			 *
 			 * TODO: Find a better way to store short-args. */
-			 TODO:
 			if (argv[i][1] == '-') {
 				non_defined_flags[non_defined_flags_c - 1] =
 					argv[i];
@@ -588,17 +595,18 @@ spl_flags_print_flags(FILE *restrict stream)
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
-			fprintf(stream, " (Default: %s)", *((int *)flags[i].value_default) ?
-					"on" : "off");
+			fprintf(stream, " (Default: %s)",
+			        *((int *)flags[i].value_default) ? "on" :
+                                                                   "off");
 			break;
 		case TYPE_INT:
 			fprintf(stream, " (Default: %d)",
-					*((int *)flags[i].value_default));
+			        *((int *)flags[i].value_default));
 			break;
 		case TYPE_STR:
 			if (*((char **)flags[i].value_default) != NULL) {
 				fprintf(stream, " (Default: '%s')",
-						*((char **)flags[i].value_default));
+				        *((char **)flags[i].value_default));
 			}
 		}
 
@@ -628,7 +636,7 @@ spl_flags_debug_print(FILE *restrict stream)
 {
 	fprintf(stream, "= DEFINED FLAGS =\n");
 	for (int i = 0; i < flags_c; i++) {
-		fprintf(stream, "#%d of %d:\n", i+1, flags_c);
+		fprintf(stream, "#%d of %d:\n", i + 1, flags_c);
 
 		fprintf(stream, "Info: %s\n", flags[i].info);
 		fprintf(stream, "Type: ");
@@ -645,23 +653,23 @@ spl_flags_debug_print(FILE *restrict stream)
 		}
 
 		fprintf(stream, "\tShort hand: %c\tLong hand: %s\n",
-				flags[i].short_hand, flags[i].long_hand);
+		        flags[i].short_hand, flags[i].long_hand);
 
 		switch (flags[i].type) {
 		case TYPE_TOGGLE:
 			fprintf(stream, "'%d' (Default: '%d')",
-					*((int *)flags[i].value),
-					*((int *)flags[i].value_default));
+			        *((int *)flags[i].value),
+			        *((int *)flags[i].value_default));
 			break;
 		case TYPE_INT:
 			fprintf(stream, "'%d' (Default: '%d')",
-					*((int *)flags[i].value),
-					*((int *)flags[i].value_default));
+			        *((int *)flags[i].value),
+			        *((int *)flags[i].value_default));
 			break;
 		case TYPE_STR:
 			fprintf(stream, "'%s' (Default: '%s')",
-					*((char **)flags[i].value),
-					(char *)flags[i].value_default);
+			        *((char **)flags[i].value),
+			        (char *)flags[i].value_default);
 		}
 
 		fprintf(stream, "\n\n");

@@ -75,7 +75,7 @@ spl_str_clean(char *str)
 	while (isspace(str[i]) != 0)
 		i++;
 	str += i;
-	
+
 	/* trim trailing whitespaces */
 	i = strlen(str) - 1;
 	while (isspace(str[i]) != 0)
