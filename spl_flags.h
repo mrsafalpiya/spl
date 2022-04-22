@@ -505,10 +505,8 @@ cur_argv_next_char:
 						 * check if secondary flags are
 						 * available in the current argv
 						 */
-						if (*(cur_argv + 1) != '\0') {
-							++cur_argv;
-							continue;
-						}
+						if (*(cur_argv + 1) != '\0')
+							goto cur_argv_next_char;
 					default:
 						break;
 					}
@@ -552,19 +550,22 @@ cur_argv_next_char:
 
 			/* check if the argument is a short or a long type */
 
-			/* I'm dynamically allocating non-defined args so as to
-			 * store short-args and not interfare with argv.
+			/* I'm dynamically allocating non-defined args to store
+			 * short-args.
 			 *
-			 * TODO: Find a better way to handle this. */
+			 * TODO: Find a better way to store short-args. */
+			 TODO:
 			if (argv[i][1] == '-') {
 				non_defined_flags[non_defined_flags_c - 1] =
-					strdup(argv[i]);
+					argv[i];
 			} else {
 				non_defined_flags[non_defined_flags_c - 1] =
-					malloc(2 * sizeof(char));
-				*non_defined_flags[non_defined_flags_c - 1] =
-					cur_argv[0];
+					malloc(3 * sizeof(char));
+				non_defined_flags[non_defined_flags_c - 1][0] =
+					'-';
 				non_defined_flags[non_defined_flags_c - 1][1] =
+					cur_argv[0];
+				non_defined_flags[non_defined_flags_c - 1][2] =
 					'\0';
 				if (*(cur_argv + 1) != '\0')
 					goto cur_argv_next_char;
@@ -609,8 +610,10 @@ spl_flags_print_flags(FILE *restrict stream)
 void
 spl_flags_free(void)
 {
-	for (int i = 0; i < non_defined_flags_c; i++)
-		free(non_defined_flags[i]);
+	for (int i = 0; i < non_defined_flags_c; i++) {
+		if (non_defined_flags[i][1] != '-')
+			free(non_defined_flags[i]);
+	}
 }
 
 #ifdef SPL_FLAGS_DEBUG
