@@ -127,11 +127,28 @@ main(int argc, char **argv)
  *     -h, --help, (Default: Off)  Print help message
  *     -a, (Default: 19)   Your age
  *     --university,       University you are studying in
- *     -g, --gpa, (Default: 3.650000)      Your GPA
+ *     -g, --gpa, (Default: 3.65)      Your GPA
  *
  * $ ./spl-test Safal -a20 --gpa 3.55 --university="Tribhuvan University"
  * Your name is Safal, aged 20 studying in Tribhuvan University and you got 3.55
  * GPA
+ */
+
+/*
+ * =====================
+ * | Available Options |
+ * =====================
+ *
+ * You can redefine following macros for different results:
+ *
+ * (#) `SPL_FLAGS_CAP` - Default: 256 - Maximum number of flags that can be
+ *     defined.
+ * (#) `SPL_FLAGS_FLOAT_PRECISION` - Default: "2" - Floating point precision in
+ *     the output of `spl_flags_print_help`.
+ * (#) `SPL_FLAGS_TOGGLE_0_STR` - Default: "Off" - String representation for the
+ *     value 0 on toggle to print in the output of `spl_flags_print_help`.
+ * (#) `SPL_FLAGS_TOGGLE_1_STR` - Default: "On" - String representation for the
+ *     value 1 on toggle to print in the output of `spl_flags_print_help`.
  */
 
 /*
@@ -149,6 +166,19 @@ main(int argc, char **argv)
 /* constants */
 #ifndef SPL_FLAGS_CAP
 #define SPL_FLAGS_CAP 256
+#endif
+
+#ifndef SPL_FLAGS_FLOAT_PRECISION
+#define SPL_FLAGS_FLOAT_PRECISION "2"
+#endif
+
+/* values on toggle */
+#ifndef SPL_FLAGS_TOGGLE_0_STR
+#define SPL_FLAGS_TOGGLE_0_STR "Off"
+#endif
+
+#ifndef SPL_FLAGS_TOGGLE_1_STR
+#define SPL_FLAGS_TOGGLE_1_STR "On"
 #endif
 
 /* struct */
@@ -511,9 +541,8 @@ spl_flags_parse(int argc, char **argv)
 		if (IS_EQUAL_ARG(fi.flag_type))
 			equal_symbol = strchr(cur_argv, '=');
 		/* Check if we have to find the length of `long_hand` */
-		else
-			if (fi.flag_p->long_hand != NULL)
-				lh_len = strlen(fi.flag_p->long_hand);
+		else if (fi.flag_p->long_hand != NULL)
+			lh_len = strlen(fi.flag_p->long_hand);
 
 		switch (fi.flag_type) {
 		case FLAG_INT_SHORT_NON_EQUAL:
@@ -662,11 +691,12 @@ spl_flags_print_help(FILE *stream)
 			fprintf(stream, "(Default: %s)",
 			        defined_flags[i].value_default.value_toggle ==
 			                        0 ?
-			                "Off" :
-                                        "On");
+			                SPL_FLAGS_TOGGLE_0_STR :
+                                        SPL_FLAGS_TOGGLE_1_STR);
 			break;
 		case FLAG_FLOAT:
-			fprintf(stream, "(Default: %f)",
+			fprintf(stream,
+			        "(Default: %0." SPL_FLAGS_FLOAT_PRECISION "f",
 			        defined_flags[i].value_default.value_float);
 			break;
 		case FLAG_STR:
