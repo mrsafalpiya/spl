@@ -15,7 +15,9 @@
  |                               Version History                               |
  ===============================================================================
  *
- - v0.1 (Current)
+ - v0.2 (Current)
+     - Added 'SPLU_HEXCOLOR(hex)' and 'SPLU_HEXCOLORA(hex)' macros.
+ - v0.1
  */
 
 /*
@@ -84,6 +86,23 @@ splu_die(const char *fmt, ...);
  */
 
 #ifdef SPLU_IMPL
+
+/*
+ ===============================================================================
+ |                                   Macros                                    |
+ ===============================================================================
+ */
+
+/* Convert hex color representation into 3 comma-separated uint8 values */
+#define SPLU_HEXCOLOR(hex)                                    \
+	((hex) >> (2 * 8)) & 0xFF, ((hex) >> (1 * 8)) & 0xFF, \
+		((hex) >> (0 * 8)) & 0xFF
+
+/* Convert hex color (including alpha) representation into 4 comma-separated
+ * uint8 values */
+#define SPLU_HEXCOLORA(hex)                                   \
+	((hex) >> (3 * 8)) & 0xFF, ((hex) >> (2 * 8)) & 0xFF, \
+		((hex) >> (1 * 8)) & 0xFF, ((hex) >> (0 * 8)) & 0xFF
 
 /*
  ===============================================================================
