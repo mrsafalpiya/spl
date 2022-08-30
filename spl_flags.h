@@ -17,7 +17,9 @@
  |                               Version History                               |
  ===============================================================================
  *
- - v0.1 (Current)
+ - v0.2 (Current)
+     - Added 'splf_warn_ignored_args()'.
+ - v0.1
  */
 
 /*
@@ -74,6 +76,9 @@ main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
+	/* Ignore any argument after the name */
+	splf_warn_ignored_args(f_info, stderr, 1);
+
 	/* Check if the user gave us a name as an argument */
 	if (f_info.non_flag_arguments_c == 0) {
 		fprintf(stderr, "Usage: %s name\n", argv[0]);
@@ -89,6 +94,7 @@ main(int argc, char **argv)
 
 	return 0;
 }
+
 #endif
 
 /* OUTPUT:
@@ -116,6 +122,10 @@ Available options are:
     -u, --university, (Default: 'Tribhuvan University') Your university
 
 $ ./bin/flags Safal
+Your name is Safal aged 20 studying in Tribhuvan University and you got 3.60 gpa.
+
+$ ./bin/flags Safal Piya
+WARNING: Following arguments are ignored: "Piya".
 Your name is Safal aged 20 studying in Tribhuvan University and you got 3.60 gpa.
 
 $ ./bin/flags Safal -a=21 --gpa 3.2 -u "Prime College"
@@ -257,6 +267,16 @@ splf_str(char **f_str, const char short_hand, const char *long_hand,
  */
 SPLF_DEF splf_info
 splf_parse(int argc, char **argv);
+
+/*
+ * Sometimes the user provides more arguments (namely 'non_flag_arguments') than
+ * anticipated and are ignored.  Warn about it.
+ *
+ * `index` is the index of the 'non_flag_arguments' from which the arguments are
+ * ignored.
+ */
+SPLF_DEF void
+splf_warn_ignored_args(splf_info f_info, FILE *stream, int index);
 
 /* Outputs the help message to the given `stream`. */
 SPLF_DEF void
@@ -535,6 +555,20 @@ splf_parse(int argc, char **argv)
 	}
 
 	return f_info;
+}
+
+SPLF_DEF void
+splf_warn_ignored_args(splf_info f_info, FILE *stream, int index)
+{
+	if (index >= f_info.non_flag_arguments_c) {
+		return;
+	}
+	fprintf(stream, "WARNING: Following arguments are ignored: ");
+
+	for (int i = index; i < f_info.non_flag_arguments_c; i++)
+		fprintf(stream, "\"%s\"%c", f_info.non_flag_arguments[i],
+		        i == f_info.non_flag_arguments_c - 1 ? '.' : ' ');
+	fprintf(stream, "\n");
 }
 
 SPLF_DEF void
