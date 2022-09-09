@@ -1,9 +1,9 @@
 /*
  ===============================================================================
- |                                 spl_utils.h                                 |
+ |                                 spl_color.h                                 |
  |                     https://github.com/mrsafalpiya/spl                      |
  |                                                                             |
- |                              Utility functions                              |
+ |                       Color related helper functions                        |
  |                                                                             |
  |                  No warranty implied; Use at your own risk                  |
  |                  See end of file for license information.                   |
@@ -15,13 +15,7 @@
  |                               Version History                               |
  ===============================================================================
  *
- - v0.3 (Current)
-     - Removed 'SPLU_HEXCOLOR(hex)' and 'SPLU_HEXCOLORA(hex)' macros from the
-       previous version into a separate header file.
-     - Added 'SPLU_MAP()' macro.
- - v0.2
-     - Added 'SPLU_HEXCOLOR(hex)' and 'SPLU_HEXCOLORA(hex)' macros.
- - v0.1
+ - v0.1 (Current)
  */
 
 /*
@@ -31,7 +25,7 @@
  *
  * Do this:
  *
- *         #define SPLU_IMPL
+ *         #define SPLCOL_IMPL
  *
  * before you include this file in *one* C or C++ file to create the
  * implementation.
@@ -39,57 +33,23 @@
 
 /*
  ===============================================================================
- |                                   Options                                   |
- ===============================================================================
- */
-
-/* = SPLU = */
-#ifndef SPLU_DEF
-#define SPLU_DEF /* You may want `static` or `static inline` here */
-#endif
-
-/*
- ===============================================================================
  |                              HEADER-FILE MODE                               |
  ===============================================================================
  */
 
-#ifndef SPLU_H
-#define SPLU_H
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <errno.h>
+#ifndef SPLCOL_H
+#define SPLCOL_H
 
 /*
  ===============================================================================
- |                            Function Declarations                            |
+ |                                   Options                                   |
  ===============================================================================
  */
 
-/*
- * Writes out the passed format to stderr and kill the program.
- * Copied from git.suckless.org/dwm.
- *
- * Automatically adds a new line to the end.
- *
- * If a semicolon `:` is present at the end of the string, perror() is also
- * called appending the error.
- */
-SPLU_DEF void
-splu_die(const char *fmt, ...);
-
-#endif /* SPLU_H */
-
-/*
- ===============================================================================
- |                             IMPLEMENTATION MODE                             |
- ===============================================================================
- */
-
-#ifdef SPLU_IMPL
+/* = SPLCOL = */
+#ifndef SPLCOL_DEF
+#define SPLCOL_DEF /* You may want `static` or `static inline` here */
+#endif
 
 /*
  ===============================================================================
@@ -97,10 +57,42 @@ splu_die(const char *fmt, ...);
  ===============================================================================
  */
 
-/* Get the `p`% value between [`p_min`, `p_max`] and use it to get the
- * percentaged value between `a` and `b`. */
-#define SPLU_MAP(p, p_min, p_max, a, b) \
-	a + (b - a) * ((p - p_min) / (p_max - p_min))
+/* = HEX CONVERSION = */
+
+/* Convert hex color representation into 3 comma-separated uint8 values */
+#define SPLCOL_HEX(hex)                                       \
+	((hex) >> (2 * 8)) & 0xFF, ((hex) >> (1 * 8)) & 0xFF, \
+		((hex) >> (0 * 8)) & 0xFF
+
+/* Convert hex color (including alpha) representation into 4 comma-separated
+ * uint8 values */
+#define SPLCOL_HEXA(hex)                                      \
+	((hex) >> (3 * 8)) & 0xFF, ((hex) >> (2 * 8)) & 0xFF, \
+		((hex) >> (1 * 8)) & 0xFF, ((hex) >> (0 * 8)) & 0xFF
+
+/* Convert hex color (including alpha) representation into 4 comma-separated
+ * normalized float values (mainly for opengl) */
+#define SPLCOL_HEXGL(hex)                                   \
+	(float)(((hex) >> (3 * 8)) & 0xFF) / 255.0,         \
+		(float)(((hex) >> (2 * 8)) & 0xFF) / 255.0, \
+		(float)(((hex) >> (1 * 8)) & 0xFF) / 255.0, \
+		(float)(((hex) >> (0 * 8)) & 0xFF) / 255.0
+
+/*
+ ===============================================================================
+ |                            Function Declarations                            |
+ ===============================================================================
+ */
+
+#endif /* SPLCOL_H */
+
+/*
+ ===============================================================================
+ |                             IMPLEMENTATION MODE                             |
+ ===============================================================================
+ */
+
+#ifdef SPLCOL_IMPL
 
 /*
  ===============================================================================
@@ -108,29 +100,7 @@ splu_die(const char *fmt, ...);
  ===============================================================================
  */
 
-SPLU_DEF void
-splu_die(const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-
-	if (fmt[0] && fmt[strlen(fmt) - 1] == ':') {
-		fputc(' ', stderr);
-		if (errno != 0)
-			perror(NULL);
-		else
-			fprintf(stderr, "Something went wrong\n");
-	} else {
-		fputc('\n', stderr);
-	}
-
-	exit(EXIT_FAILURE);
-}
-
-#endif /* SPLU_IMPL */
+#endif /* SPLCOL_IMPL */
 
 /*
  ===============================================================================
