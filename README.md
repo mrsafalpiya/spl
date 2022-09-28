@@ -5,8 +5,10 @@ probably yours) programming needs in C.
 
 ## Library collection
 
+1. `color` -- Color related functions.
 1. `flags` -- GNU-style argument parsing inspired by golang's flag.
 1. `path` -- Path-string manipulation functions.
+1. `str` -- C string manipulation functions.
 1. `utils` -- Few utilities useful for almost all programs.
 
 ## Creating a library
