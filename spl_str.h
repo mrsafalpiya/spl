@@ -15,7 +15,12 @@
  |                               Version History                               |
  ===============================================================================
  *
- - v0.1 (Current)
+ - v0.2
+     - Modified identifier names from 'spl_str*' to 'spl_str_*'.
+     - Added `does_begin_with()`, `does_begin_with_case()`, `does_end_with()`,
+       `does_end_with_case()`, `toupper()`, `toupper_dup()`, `tolower()`,
+       `tolower_dup()`.
+ - v0.1
  */
 
 /*
@@ -63,28 +68,103 @@
 /*
  * Remove leading and trailing whitespaces from the string.
  *
+ * `len` is the length of the `str`. It can also be the number of bytes you want
+ * to clean. Pass -1 if you want the function to calculate it.
+ *
  * Cleaning is done on the original string in destructive manner (moving and
- * editing bytes within the string). Safe to pass NULL.
+ * editing bytes within the string).
  *
  * NOTE: NOT to be called on a read-only memory as it WILL CAUSE SEGFAULT. In
- * which case run 'spl_strclean_dup()'.
+ * which case run 'spl_str_clean_dup()'.
  */
 SPL_STR_DEF void
-spl_strclean(char *str);
+spl_str_clean(char *str, int len);
+
+/* Same as 'spl_str_clean()' but first a duplicate of the original string is
+ * created. Thus this function can be called on read-only strings too. As the
+ * result is a dynamically allocated string, it has to be free'ed later. */
+SPL_STR_DEF char *
+spl_str_clean_dup(const char *str, int len);
 
 /*
- * Remove leading and trailing whitespaces from the string.
+ * Because 'strndup()' is not standard.
  *
- * Cleaning is done by creating a duplicate of the original string. Thus can be
- * called on read-only strings too. As the result is a dynamically allocated
- * string, it has to be free'ed later. Safe to pass NULL which will return NULL.
+ * `len` is the length of the `str`. It can also be the number of bytes you want
+ * to duplicate. Pass -1 if you want the function to calculate it.
  */
 SPL_STR_DEF char *
-spl_strclean_dup(const char *str);
+spl_str_dup(const char *str, int len);
 
-/* 'strdup()' */
+/*
+ * Check if the given string `str` begins with the given `begin_str`.
+ *
+ * `len` is the length of the `begin_str`. It can also be the number of bytes
+ * you want to compare. Pass -1 if you want the function to calculate it.
+ *
+ * Returns 1 if it does begin with it OR 0 if it doesn't.
+ */
+SPL_STR_DEF int
+spl_str_does_begin_with(const char *str, const char *begin_str,
+                        int len_begin_str);
+
+/* Case insensitive version of 'does_begin_with()'. */
+SPL_STR_DEF int
+spl_str_does_begin_with_case(const char *str, const char *begin_str,
+                             int len_begin_str);
+
+/*
+ * Check if the given string `str` ends with the given `end_str`.
+ *
+ * `str_len` is the length of the `str`. `cmp_len` is the length of the
+ * `end_str`. It can also be the number of bytes you want to compare. Pass -1
+ * if you want the function to calculate it.
+ *
+ * Returns 1 if it does begin with it OR 0 if it doesn't.
+ */
+SPL_STR_DEF int
+spl_str_does_end_with(const char *str, const char *end_str, int len_str,
+                      int len_end_str);
+
+/* Case insensitive version of 'does_end_with()'. */
+SPL_STR_DEF int
+spl_str_does_end_with_case(const char *str, const char *end_str, int len_str,
+                           int len_end_str);
+
+/*
+ * Change the whole string to uppercase.
+ *
+ * Operation is done on the original string in destructive manner (editing
+ * bytes within the string). Safe to pass NULL.
+ *
+ * NOTE: NOT to be called on a read-only memory as it WILL CAUSE SEGFAULT. In
+ * which case run 'spl_str_toupper_dup()'.
+ */
+SPL_STR_DEF void
+spl_str_toupper(char *str, int len);
+
+/* Same as 'spl_str_toupper()' but first a duplicate of the original string is
+ * created. Thus this function can be called on read-only strings too. As the
+ * result is a dynamically allocated string, it has to be free'ed later. */
 SPL_STR_DEF char *
-spl_strdup(const char *str);
+spl_str_toupper_dup(const char *str, int len);
+
+/*
+ * Change the whole string to lowercase.
+ *
+ * Operation is done on the original string in destructive manner (editing
+ * bytes within the string). Safe to pass NULL.
+ *
+ * NOTE: NOT to be called on a read-only memory as it WILL CAUSE SEGFAULT. In
+ * which case run 'spl_str_tolower_dup()'.
+ */
+SPL_STR_DEF void
+spl_str_tolower(char *str, int len);
+
+/* Same as 'spl_str_tolower()' but first a duplicate of the original string is
+ * created. Thus this function can be called on read-only strings too. As the
+ * result is a dynamically allocated string, it has to be free'ed later. */
+SPL_STR_DEF char *
+spl_str_tolower_dup(const char *str, int len);
 
 #endif /* SPL_STR_H */
 
@@ -96,6 +176,8 @@ spl_strdup(const char *str);
 
 #ifdef SPL_STR_IMPL
 
+#include <ctype.h>
+
 /*
  ===============================================================================
  |                          Function Implementations                           |
@@ -103,16 +185,14 @@ spl_strdup(const char *str);
  */
 
 SPL_STR_DEF void
-spl_strclean(char *str)
+spl_str_clean(char *str, int len)
 {
-	if (!str)
-		return;
-
-	size_t len = strlen(str);
+	if (len < 0)
+		len = strlen(str);
 
 	/* Remove leading whitespaces */
-	size_t lead_ws_c = 0;
-	char  *startp    = str;
+	int   lead_ws_c = 0;
+	char *startp    = str;
 	while (*startp == ' ') {
 		lead_ws_c++;
 		startp++;
@@ -130,26 +210,140 @@ spl_strclean(char *str)
 }
 
 SPL_STR_DEF char *
-spl_strclean_dup(const char *str)
+spl_str_clean_dup(const char *str, int len)
 {
-	if (!str)
-		return NULL;
+	if (len < 0)
+		len = strlen(str);
 
-	char *ret = spl_strdup(str);
-	spl_strclean(ret);
-	return ret;
+	char *str_cleaned = spl_str_dup(str, len);
+	spl_str_clean(str_cleaned, len);
+
+	return str_cleaned;
 }
 
 SPL_STR_DEF char *
-spl_strdup(const char *str)
+spl_str_dup(const char *str, int len)
 {
-	size_t len = strlen(str) + 1;
+	if (len < 0)
+		len = strlen(str);
 
-	char *ret = malloc(len);
-	if (!ret)
+	char *str_duped = malloc(len + 1);
+	if (!str_duped)
 		return NULL;
 
-	return memcpy(ret, str, len);
+	memcpy(str_duped, str, len);
+	str_duped[len] = '\0';
+
+	return str_duped;
+}
+
+SPL_STR_DEF int
+spl_str_does_begin_with(const char *str, const char *begin_str,
+                        int len_begin_str)
+{
+	if (len_begin_str < 0)
+		len_begin_str = strlen(begin_str);
+
+	if (!strncmp(str, begin_str, len_begin_str))
+		return 1;
+	return 0;
+}
+
+SPL_STR_DEF int
+spl_str_does_begin_with_case(const char *str, const char *begin_str,
+                             int len_begin_str)
+{
+	if (len_begin_str < 0)
+		len_begin_str = strlen(begin_str);
+
+	for (int i = 0; i < len_begin_str; i++) {
+		if (tolower(begin_str[i]) != tolower(str[i]))
+			return 0;
+	}
+	return 1;
+}
+
+SPL_STR_DEF int
+spl_str_does_end_with(const char *str, const char *end_str, int len_str,
+                      int len_end_str)
+{
+	if (len_str < 0)
+		len_str = strlen(str);
+	if (len_end_str < 0)
+		len_end_str = strlen(end_str);
+
+	if (len_end_str > len_str)
+		return 0;
+
+	for (int i = 0; i < len_end_str; i++) {
+		if (str[len_str - 1 - i] != end_str[len_end_str - 1 - i])
+			return 0;
+	}
+	return 1;
+}
+
+SPL_STR_DEF int
+spl_str_does_end_with_case(const char *str, const char *end_str, int len_str,
+                           int len_end_str)
+{
+	if (len_str < 0)
+		len_str = strlen(str);
+	if (len_end_str < 0)
+		len_end_str = strlen(end_str);
+
+	if (len_end_str > len_str)
+		return 0;
+
+	for (int i = 0; i < len_end_str; i++) {
+		if (tolower(str[len_str - 1 - i]) !=
+		    tolower(end_str[len_end_str - 1 - i]))
+			return 0;
+	}
+	return 1;
+}
+
+SPL_STR_DEF void
+spl_str_toupper(char *str, int len)
+{
+	if (len < 0)
+		len = strlen(str);
+
+	for (int i = 0; i < len; i++)
+		str[i] = toupper(str[i]);
+}
+
+SPL_STR_DEF char *
+spl_str_toupper_dup(const char *str, int len)
+{
+	if (len < 0)
+		len = strlen(str);
+
+	char *str_touppered = spl_str_dup(str, len);
+	spl_str_toupper(str_touppered, len);
+
+	return str_touppered;
+}
+
+SPL_STR_DEF void
+spl_str_tolower(char *str, int len)
+{
+	if (len < 0)
+		len = strlen(str);
+
+	for (int i = 0; i < len; i++)
+		str[i] = tolower(str[i]);
+}
+
+SPL_STR_DEF char *
+spl_str_tolower_dup(const char *str, int len)
+{
+	if (len < 0)
+		len = strlen(str);
+
+	char *str_tolowered = spl_str_dup(str, len);
+	spl_str_tolower(str_tolowered, len);
+
+	return str_tolowered;
 }
 
 #endif /* SPL_STR_IMPL */
