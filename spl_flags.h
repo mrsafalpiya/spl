@@ -17,8 +17,11 @@
  |                               Version History                               |
  ===============================================================================
  *
- - v0.2 (Current)
-     - Added 'splf_warn_ignored_args()'.
+ - v0.3 (Current)
+     - Changed all identifiers from '*_f' to an explicit '*_flag'.
+     - Added proper C++ support by replacing the '{ 0 }' syntax with 'memset()'.
+ - v0.2
+     - Added 'spl_flag_warn_ignored_args()'.
  - v0.1
  */
 
@@ -56,28 +59,28 @@ main(int argc, char **argv)
 	char *name          = NULL;
 
 	/* Set flags */
-	splf_toggle(&to_print_help, 'h', "help", "Print the help message");
-	splf_toggle(&to_greet, 'g', "greet", "To greet");
-	splf_int(&age, 'a', NULL, "Your age");
-	splf_float(&gpa, ' ', "gpa", "Your gpa");
-	splf_str(&univ, 'u', "university", "Your university");
+	spl_flag_toggle(&to_print_help, 'h', "help", "Print the help message");
+	spl_flag_toggle(&to_greet, 'g', "greet", "To greet");
+	spl_flag_int(&age, 'a', NULL, "Your age");
+	spl_flag_float(&gpa, ' ', "gpa", "Your gpa");
+	spl_flag_str(&univ, 'u', "university", "Your university");
 
-	splf_info f_info = splf_parse(argc, argv);
+	spl_flag_info f_info = spl_flag_parse(argc, argv);
 
 	/* Printing any gotchas in parsing */
-	if (splf_print_gotchas(f_info, stderr))
+	if (spl_flag_print_gotchas(f_info, stderr))
 		exit(EXIT_FAILURE);
 
 	/* Check if -h flag was passed */
 	if (to_print_help) {
 		fprintf(stdout, "Usage: %s name\n\nAvailable options are:\n",
 		        argv[0]);
-		splf_print_help(stdout);
+		spl_flag_print_help(stdout);
 		exit(EXIT_SUCCESS);
 	}
 
 	/* Ignore any argument after the name */
-	splf_warn_ignored_args(f_info, stderr, 1);
+	spl_flag_warn_ignored_args(f_info, stderr, 1);
 
 	/* Check if the user gave us a name as an argument */
 	if (f_info.non_flag_arguments_c == 0) {
@@ -94,7 +97,6 @@ main(int argc, char **argv)
 
 	return 0;
 }
-
 #endif
 
 /* OUTPUT:
@@ -145,25 +147,25 @@ No value given on the short flag 'u'
  ===============================================================================
  */
 
-/* = splf = */
-#ifndef SPLF_DEF
-#define SPLF_DEF /* You may want `static` or `static inline` here */
+/* = spl_flag = */
+#ifndef SPL_FLAG_DEF
+#define SPL_FLAG_DEF /* You may want `static` or `static inline` here */
 #endif
 
-#define SPLF_MAX 256 /* Max number of flags to support */
+#define SPL_FLAG_MAX 256 /* Max number of flags to support */
 
-#ifndef SPLF_FLOAT_PRECISION
-#define SPLF_FLOAT_PRECISION "2" /* Float precision on 'print_help()' */
+#ifndef SPL_FLAG_FLOAT_PRECISION
+#define SPL_FLAG_FLOAT_PRECISION "2" /* Float precision on 'print_help()' */
 #endif
 
 /* values on toggle */
-#ifndef SPLF_TOGGLE_0_STR
-#define SPLF_TOGGLE_0_STR \
+#ifndef SPL_FLAG_TOGGLE_0_STR
+#define SPL_FLAG_TOGGLE_0_STR \
 	"Off" /* String representation for toggle 0 on 'print_help()' */
 #endif
 
-#ifndef SPLF_TOGGLE_1_STR
-#define SPLF_TOGGLE_1_STR \
+#ifndef SPL_FLAG_TOGGLE_1_STR
+#define SPL_FLAG_TOGGLE_1_STR \
 	"On" /* String representation for toggle 1 on 'print_help()' */
 #endif
 
@@ -173,8 +175,8 @@ No value given on the short flag 'u'
  ===============================================================================
  */
 
-#ifndef SPLF_H
-#define SPLF_H
+#ifndef SPL_FLAG_H
+#define SPL_FLAG_H
 
 #include <stdlib.h>
 #include <string.h>
@@ -199,23 +201,23 @@ typedef enum {
 	SHORT_EQUAL,
 	LONG_NON_EQUAL,
 	LONG_EQUAL
-} splf_arg_type;
+} spl_flag_arg_type;
 
 /* = Unions = */
 typedef union {
 	int   tog_num;
 	float float_num;
 	char  str[1024];
-} splf_def_value;
+} spl_flag_def_value;
 
 /* = Structs = */
 typedef struct {
-	spl_flag_type  type;
-	char           short_hand;
-	char           long_hand[256];
-	splf_def_value def_value;
-	char           info[512];
-	void          *data_ptr;
+	spl_flag_type      type;
+	char               short_hand;
+	char               long_hand[256];
+	spl_flag_def_value def_value;
+	char               info[512];
+	void              *data_ptr;
 } spl_flag_entry;
 
 typedef struct {
@@ -227,11 +229,11 @@ typedef struct {
 	int   non_flag_arguments_c;
 	char *non_value_flag_long;
 	char  non_value_flag_short; /* '\0' = empty */
-} splf_info;
+} spl_flag_info;
 
 /* = Global variables = */
-static spl_flag_entry splf[SPLF_MAX];
-static int            splf_c = 0;
+static spl_flag_entry spl_flag[SPL_FLAG_MAX];
+static int            spl_flag_c = 0;
 
 /*
  ===============================================================================
@@ -240,24 +242,24 @@ static int            splf_c = 0;
  */
 
 /* Creates a toggle-type flag. */
-SPLF_DEF void
-splf_toggle(int *f_toggle, const char short_hand, const char *long_hand,
-            const char *info);
+SPL_FLAG_DEF void
+spl_flag_toggle(int *f_toggle, const char short_hand, const char *long_hand,
+                const char *info);
 
 /* Creates a int-type flag. */
-SPLF_DEF void
-splf_int(int *f_int, const char short_hand, const char *long_hand,
-         const char *info);
+SPL_FLAG_DEF void
+spl_flag_int(int *f_int, const char short_hand, const char *long_hand,
+             const char *info);
 
 /* Creates a float-type flag. */
-SPLF_DEF void
-splf_float(float *f_float, const char short_hand, const char *long_hand,
-           const char *info);
+SPL_FLAG_DEF void
+spl_flag_float(float *f_float, const char short_hand, const char *long_hand,
+               const char *info);
 
 /* Creates a string-type flag. */
-SPLF_DEF void
-splf_str(char **f_str, const char short_hand, const char *long_hand,
-         const char *info);
+SPL_FLAG_DEF void
+spl_flag_str(char **f_str, const char short_hand, const char *long_hand,
+             const char *info);
 
 /*
  * Parses all the flags with the given argc and argv.
@@ -265,8 +267,8 @@ splf_str(char **f_str, const char short_hand, const char *long_hand,
  * Make sure to pass the argc and argv from the 'main' without any
  * modifications.
  */
-SPLF_DEF splf_info
-splf_parse(int argc, char **argv);
+SPL_FLAG_DEF spl_flag_info
+spl_flag_parse(int argc, char **argv);
 
 /*
  * Sometimes the user provides more arguments (namely 'non_flag_arguments') than
@@ -275,23 +277,23 @@ splf_parse(int argc, char **argv);
  * `index` is the index of the 'non_flag_arguments' from which the arguments are
  * ignored.
  */
-SPLF_DEF void
-splf_warn_ignored_args(splf_info f_info, FILE *stream, int index);
+SPL_FLAG_DEF void
+spl_flag_warn_ignored_args(spl_flag_info f_info, FILE *stream, int index);
 
 /* Outputs the help message to the given `stream`. */
-SPLF_DEF void
-splf_print_help(FILE *stream);
+SPL_FLAG_DEF void
+spl_flag_print_help(FILE *stream);
 
 /*
  * Outputs any gotchas in the parsing to the given `stream` by reading the
  * 'non_defined_flags_long_c', 'non_defined_flags_short_c',
  * 'non_flag_arguments_c', 'non_value_flag_long', 'non_value_flag_short' fields
- * of the 'splf_info' struct.
+ * of the 'spl_flag_info' struct.
  *
  * Returns 1 if any gotchas was found.
  */
-SPLF_DEF int
-splf_print_gotchas(splf_info f_info, FILE *stream);
+SPL_FLAG_DEF int
+spl_flag_print_gotchas(spl_flag_info f_info, FILE *stream);
 
 /*
  ===============================================================================
@@ -299,71 +301,73 @@ splf_print_gotchas(splf_info f_info, FILE *stream);
  ===============================================================================
  */
 
-#define SPLF_ADD_MACRO                                     \
-	splf[splf_c].short_hand = short_hand;              \
-	if (long_hand != NULL)                             \
-		strcpy(splf[splf_c].long_hand, long_hand); \
-	else                                               \
-		splf[splf_c].long_hand[0] = '\0';          \
-	strcpy(splf[splf_c].info, info);                   \
-	++splf_c;
+#define SPL_FLAG_ADD_MACRO                                         \
+	spl_flag[spl_flag_c].short_hand = short_hand;              \
+	if (long_hand != NULL)                                     \
+		strcpy(spl_flag[spl_flag_c].long_hand, long_hand); \
+	else                                                       \
+		spl_flag[spl_flag_c].long_hand[0] = '\0';          \
+	strcpy(spl_flag[spl_flag_c].info, info);                   \
+	++spl_flag_c;
 
-SPLF_DEF void
-splf_toggle(int *f_toggle, const char short_hand, const char *long_hand,
-            const char *info)
+SPL_FLAG_DEF void
+spl_flag_toggle(int *f_toggle, const char short_hand, const char *long_hand,
+                const char *info)
 {
-	splf[splf_c].type              = SPL_FLAG_TYPE_TOGGLE;
-	splf[splf_c].data_ptr          = (void *)f_toggle;
-	splf[splf_c].def_value.tog_num = *f_toggle;
-	SPLF_ADD_MACRO
+	spl_flag[spl_flag_c].type              = SPL_FLAG_TYPE_TOGGLE;
+	spl_flag[spl_flag_c].data_ptr          = (void *)f_toggle;
+	spl_flag[spl_flag_c].def_value.tog_num = *f_toggle;
+	SPL_FLAG_ADD_MACRO
 }
 
-SPLF_DEF void
-splf_int(int *f_int, const char short_hand, const char *long_hand,
-         const char *info)
+SPL_FLAG_DEF void
+spl_flag_int(int *f_int, const char short_hand, const char *long_hand,
+             const char *info)
 {
-	splf[splf_c].type              = SPL_FLAG_TYPE_INT;
-	splf[splf_c].data_ptr          = (void *)f_int;
-	splf[splf_c].def_value.tog_num = *f_int;
-	SPLF_ADD_MACRO
+	spl_flag[spl_flag_c].type              = SPL_FLAG_TYPE_INT;
+	spl_flag[spl_flag_c].data_ptr          = (void *)f_int;
+	spl_flag[spl_flag_c].def_value.tog_num = *f_int;
+	SPL_FLAG_ADD_MACRO
 }
 
-SPLF_DEF void
-splf_float(float *f_float, const char short_hand, const char *long_hand,
-           const char *info)
+SPL_FLAG_DEF void
+spl_flag_float(float *f_float, const char short_hand, const char *long_hand,
+               const char *info)
 {
-	splf[splf_c].type                = SPL_FLAG_TYPE_FLOAT;
-	splf[splf_c].data_ptr            = (void *)f_float;
-	splf[splf_c].def_value.float_num = *f_float;
-	SPLF_ADD_MACRO
+	spl_flag[spl_flag_c].type                = SPL_FLAG_TYPE_FLOAT;
+	spl_flag[spl_flag_c].data_ptr            = (void *)f_float;
+	spl_flag[spl_flag_c].def_value.float_num = *f_float;
+	SPL_FLAG_ADD_MACRO
 }
 
-SPLF_DEF void
-splf_str(char **f_str, const char short_hand, const char *long_hand,
-         const char *info)
+SPL_FLAG_DEF void
+spl_flag_str(char **f_str, const char short_hand, const char *long_hand,
+             const char *info)
 {
-	splf[splf_c].type     = SPL_FLAG_TYPE_STR;
-	splf[splf_c].data_ptr = (void **)f_str;
+	spl_flag[spl_flag_c].type     = SPL_FLAG_TYPE_STR;
+	spl_flag[spl_flag_c].data_ptr = (void **)f_str;
 	if (*f_str != NULL)
-		strcpy(splf[splf_c].def_value.str, *f_str);
-	SPLF_ADD_MACRO
+		strcpy(spl_flag[spl_flag_c].def_value.str, *f_str);
+	SPL_FLAG_ADD_MACRO
 }
 
-SPLF_DEF splf_info
-splf_parse(int argc, char **argv)
+SPL_FLAG_DEF spl_flag_info
+spl_flag_parse(int argc, char **argv)
 {
-	int is_double_dash = 0;
+	int   is_double_dash = 0;
 	char *cur_arg;
 
-	splf_info f_info = { 0 };
+	spl_flag_info f_info;
+	memset(&f_info, 0, sizeof(f_info));
 
 	for (int i = 1; i < argc; i++) {
-		int is_long_arg = 0;
+		int   is_long_arg = 0;
 		char *equal_ch;
 
-		/* Check if double dash was present or the current argv is NOT a
-		 * flag type argument */
-		if (is_double_dash || argv[i][0] != '-') {
+		/* Check if double dash was present OR the current argv is NOT
+		 * a flag type argument (not starting with - OR starting with
+		 * quotation mark */
+		if (is_double_dash || argv[i][0] != '-' || argv[i][0] == '"') {
 			f_info.non_flag_arguments[f_info.non_flag_arguments_c++] =
 				argv[i];
 			continue;
@@ -390,20 +394,20 @@ splf_parse(int argc, char **argv)
 		if (is_long_arg)
 			equal_ch = strchr(cur_arg, '=');
 
-		splf_arg_type a_type = NONE;
+		spl_flag_arg_type a_type = NONE;
 		/* Iterate through defined flags and search for valid flag */
-		for (int j = 0; j < splf_c; j++) {
+		for (int j = 0; j < spl_flag_c; j++) {
 			/* Get the argument type */
 			if (is_long_arg) {
 				if (equal_ch &&
-				    ((strncmp(cur_arg, splf[j].long_hand,
+				    ((strncmp(cur_arg, spl_flag[j].long_hand,
 				              equal_ch - cur_arg)) == 0))
 					a_type = LONG_EQUAL;
-				else if ((strcmp(cur_arg, splf[j].long_hand)) ==
-				         0)
+				else if ((strcmp(cur_arg,
+				                 spl_flag[j].long_hand)) == 0)
 					a_type = LONG_NON_EQUAL;
 			} else {
-				if (cur_arg[0] == splf[j].short_hand) {
+				if (cur_arg[0] == spl_flag[j].short_hand) {
 					if (equal_ch)
 						a_type = SHORT_EQUAL;
 					else
@@ -418,31 +422,31 @@ splf_parse(int argc, char **argv)
 			switch (a_type) {
 			case LONG_EQUAL:
 			case SHORT_EQUAL:
-				switch (splf[j].type) {
+				switch (spl_flag[j].type) {
 				case SPL_FLAG_TYPE_TOGGLE:
-					*((int *)splf[j].data_ptr) =
+					*((int *)spl_flag[j].data_ptr) =
 						atoi(equal_ch + 1);
 					break;
 				case SPL_FLAG_TYPE_INT:
-					*((int *)splf[j].data_ptr) =
+					*((int *)spl_flag[j].data_ptr) =
 						atoi(equal_ch + 1);
 					break;
 				case SPL_FLAG_TYPE_FLOAT:
-					*((float *)splf[j].data_ptr) =
+					*((float *)spl_flag[j].data_ptr) =
 						atof(equal_ch + 1);
 					break;
 				case SPL_FLAG_TYPE_STR:
-					*((char **)splf[j].data_ptr) =
+					*((char **)spl_flag[j].data_ptr) =
 						equal_ch + 1;
 					break;
 				}
 				break;
 			case LONG_NON_EQUAL:
 			case SHORT_NON_EQUAL:
-				switch (splf[j].type) {
+				switch (spl_flag[j].type) {
 				case SPL_FLAG_TYPE_TOGGLE:
-					*((int *)splf[j].data_ptr) =
-						!*((int *)splf[j].data_ptr);
+					*((int *)spl_flag[j].data_ptr) =
+						!*((int *)spl_flag[j].data_ptr);
 					/* Check if other arguments can be
 					 * parsed after cur_arg but in the
 					 * current argv */
@@ -471,12 +475,12 @@ splf_parse(int argc, char **argv)
 
 					if (a_type == SHORT_NON_EQUAL &&
 					    *(cur_arg + 1) != '\0') {
-						*((int *)splf[j].data_ptr) =
+						*((int *)spl_flag[j].data_ptr) =
 							atoi(cur_arg + 1);
 						break;
 					}
 
-					*((int *)splf[j].data_ptr) =
+					*((int *)spl_flag[j].data_ptr) =
 						atoi(argv[++i]);
 					break;
 				case SPL_FLAG_TYPE_FLOAT:
@@ -493,12 +497,12 @@ splf_parse(int argc, char **argv)
 
 					if (a_type == SHORT_NON_EQUAL &&
 					    *(cur_arg + 1) != '\0') {
-						*((float *)splf[j].data_ptr) =
+						*((float *)spl_flag[j].data_ptr) =
 							atof(cur_arg + 1);
 						break;
 					}
 
-					*((float *)splf[j].data_ptr) =
+					*((float *)spl_flag[j].data_ptr) =
 						atof(argv[++i]);
 					break;
 				case SPL_FLAG_TYPE_STR:
@@ -515,12 +519,12 @@ splf_parse(int argc, char **argv)
 
 					if (a_type == SHORT_NON_EQUAL &&
 					    *(cur_arg + 1) != '\0') {
-						*((char **)splf[j].data_ptr) =
+						*((char **)spl_flag[j].data_ptr) =
 							cur_arg + 1;
 						break;
 					}
 
-					*((char **)splf[j].data_ptr) =
+					*((char **)spl_flag[j].data_ptr) =
 						argv[++i];
 					break;
 				}
@@ -557,8 +561,8 @@ splf_parse(int argc, char **argv)
 	return f_info;
 }
 
-SPLF_DEF void
-splf_warn_ignored_args(splf_info f_info, FILE *stream, int index)
+SPL_FLAG_DEF void
+spl_flag_warn_ignored_args(spl_flag_info f_info, FILE *stream, int index)
 {
 	if (index >= f_info.non_flag_arguments_c) {
 		return;
@@ -571,51 +575,51 @@ splf_warn_ignored_args(splf_info f_info, FILE *stream, int index)
 	fprintf(stream, "\n");
 }
 
-SPLF_DEF void
-splf_print_help(FILE *stream)
+SPL_FLAG_DEF void
+spl_flag_print_help(FILE *stream)
 {
-	for (int i = 0; i < splf_c; i++) {
+	for (int i = 0; i < spl_flag_c; i++) {
 		fprintf(stream, "    ");
 
 		/* flag value */
-		if (splf[i].short_hand != ' ')
-			fprintf(stream, "-%c, ", splf[i].short_hand);
-		if (splf[i].long_hand[0] != '\0')
-			fprintf(stream, "--%s, ", splf[i].long_hand);
+		if (spl_flag[i].short_hand != ' ')
+			fprintf(stream, "-%c, ", spl_flag[i].short_hand);
+		if (spl_flag[i].long_hand[0] != '\0')
+			fprintf(stream, "--%s, ", spl_flag[i].long_hand);
 
 		/* default value */
-		switch (splf[i].type) {
+		switch (spl_flag[i].type) {
 		case SPL_FLAG_TYPE_TOGGLE:
 			fprintf(stream, "(Default: %s)",
-			        splf[i].def_value.tog_num == 0 ?
-			                SPLF_TOGGLE_0_STR :
-			                SPLF_TOGGLE_1_STR);
+			        spl_flag[i].def_value.tog_num == 0 ?
+			                SPL_FLAG_TOGGLE_0_STR :
+			                SPL_FLAG_TOGGLE_1_STR);
 			break;
 		case SPL_FLAG_TYPE_INT:
 			fprintf(stream, "(Default: %d)",
-			        splf[i].def_value.tog_num);
+			        spl_flag[i].def_value.tog_num);
 			break;
 		case SPL_FLAG_TYPE_FLOAT:
 			fprintf(stream,
-			        "(Default: %0." SPLF_FLOAT_PRECISION "f)",
-			        splf[i].def_value.float_num);
+			        "(Default: %0." SPL_FLAG_FLOAT_PRECISION "f)",
+			        spl_flag[i].def_value.float_num);
 			break;
 		case SPL_FLAG_TYPE_STR:
-			if (splf[i].def_value.str[0] != '\0')
+			if (spl_flag[i].def_value.str[0] != '\0')
 				fprintf(stream, "(Default: '%s')",
-				        splf[i].def_value.str);
+				        spl_flag[i].def_value.str);
 		}
 
 		/* info */
-		if (splf[i].info[0] != '\0')
-			fprintf(stream, "\t%s", splf[i].info);
+		if (spl_flag[i].info[0] != '\0')
+			fprintf(stream, "\t%s", spl_flag[i].info);
 
 		fprintf(stream, "\n");
 	}
 }
 
-SPLF_DEF int
-splf_print_gotchas(splf_info f_info, FILE *stream)
+SPL_FLAG_DEF int
+spl_flag_print_gotchas(spl_flag_info f_info, FILE *stream)
 {
 	int ret_value = 0;
 
@@ -652,7 +656,7 @@ splf_print_gotchas(splf_info f_info, FILE *stream)
 	return ret_value;
 }
 
-#endif /* SPLF_H */
+#endif /* SPL_FLAG_H */
 
 /*
  ===============================================================================
