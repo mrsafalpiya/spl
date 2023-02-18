@@ -178,6 +178,7 @@ No value given on the short flag 'u'
 #ifndef SPL_FLAG_H
 #define SPL_FLAG_H
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -544,9 +545,25 @@ spl_flag_parse(int argc, char **argv)
 					[f_info.non_defined_flags_long_c++] =
 					cur_arg;
 			else {
-				f_info.non_defined_flags_short
-					[f_info.non_defined_flags_short_c++] =
-					*cur_arg;
+				/* First check if the undefined short flag was
+				 * already passed */
+
+				int was_already_passed = 0;
+				for (int i = 0;
+				     i < f_info.non_defined_flags_short_c;
+				     i++) {
+					if (f_info.non_defined_flags_short[i] ==
+					    *cur_arg) {
+						was_already_passed = 1;
+						break;
+					}
+				}
+
+				if (!was_already_passed)
+					f_info.non_defined_flags_short
+						[f_info.non_defined_flags_short_c++] =
+						*cur_arg;
+
 				/* Check if other arguments can be parsed after
 				 * cur_arg but in the current argv */
 				if (*(cur_arg + 1) != '\0') {
